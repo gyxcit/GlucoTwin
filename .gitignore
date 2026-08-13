@@ -1,0 +1,21 @@
+# Données — jamais committées (licences tierces, volume)
+data/
+*.csv.gz
+artifacts/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Outils
+.pytest_cache/
+.ruff_cache/
+.DS_Store

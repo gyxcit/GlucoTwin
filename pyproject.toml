@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "glucotwin"
+version = "0.1.0"
+description = "Jumeau numérique du patient diabétique de type 2 — goulot métabolique interprétable et prévision glycémique évaluée honnêtement"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Regis Likassi" },
+    { name = "Hakim Djomo" },
+    { name = "Jean Direl Nze" },
+    { name = "Xavier Ondo" },
+    { name = "Seth Ndinga" },
+]
+dependencies = ["numpy>=1.24", "pandas>=2.0", "scikit-learn>=1.3", "scipy>=1.10"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "matplotlib>=3.7", "ruff>=0.4", "jupyter"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+glucotwin = ["*.csv"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
