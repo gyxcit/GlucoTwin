@@ -1,5 +1,6 @@
 # Données — jamais committées (licences tierces, volume)
-data/
+data/*
+!data/.gitkeep
 *.csv.gz
 artifacts/
 
