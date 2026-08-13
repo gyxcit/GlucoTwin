@@ -318,7 +318,7 @@ function circleNum(s,x,y,n,col){
  });
  s.addText('Next: plug in real CGMacros data — 45 real participants. The protocol is frozen, which is what will make the answer credible.',
   {x:0.8,y:5.95,w:10.6,h:0.55,fontSize:12.5,color:ORANGE,fontFace:F,italic:true,lineSpacing:17,margin:0});
- s.addText('github.com/…/GlucoTwin',{x:0.8,y:6.6,w:6,h:0.3,fontSize:11,color:GREY,fontFace:F,margin:0});
+ s.addText('github.com/gyxcit/GlucoTwin',{x:0.8,y:6.6,w:6,h:0.3,fontSize:11,color:GREY,fontFace:F,margin:0});
  s.addNotes("REGIS — 50 s\n\nPour conclure.\n\nLa plupart des jumeaux numeriques predisent un chiffre. Le notre explique un mecanisme : de ce que vous faites, a ce que votre corps consomme, a ce que votre glycemie devient, jusqu'a ce que vous pouvez changer. Chaque etape lisible et verifiable.\n\nTrois contributions. Un jumeau interpretable PAR CONSTRUCTION, pas avec des explications rajoutees apres coup. Une evaluation honnete, avec leave-one-patient-out, baseline de persistance et intervalles garantis. Et un resultat mesure : la contradiction entre precision moyenne et utilite clinique.\n\nLa suite, c'est brancher les vraies donnees de CGMacros — 45 participants reels. Notre protocole est deja fige, et c'est precisement ce qui rendra la reponse credible : nous ne pourrons pas etre accuses de l'avoir ajuste apres coup.\n\nMerci, nous sommes prets pour vos questions.");
 }
 

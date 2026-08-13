@@ -45,7 +45,7 @@ La couche 1 n'apprend rien : c'est de la physiologie publiée. C'est ce qui la r
 ## Installation
 
 ```bash
-git clone https://github.com/<votre-compte>/GlucoTwin.git
+git clone https://github.com/gyxcit/GlucoTwin.git
 cd GlucoTwin
 python -m venv .venv && source .venv/bin/activate    # Windows : .venv\Scripts\activate
 pip install -e ".[dev]"
