@@ -1,35 +1,56 @@
-# GlucoTwin (v2) — Déploiement, utilisation & fondements scientifiques
+# GlucoTwin — la démo
 
-Application web autonome (un seul fichier `index.html`, **aucune dépendance externe**). Elle fonctionne hors-ligne : idéal pour une présentation en direct sans risque de coupure réseau.
+Application web **autonome** : un seul fichier `index.html`, aucune dépendance, aucune installation. Elle fonctionne hors-ligne — c'est votre garantie anti-plantage le jour de la présentation.
 
-## Option A — Tester tout de suite (0 min)
-Double-cliquez sur `index.html` : il s'ouvre dans le navigateur. Rien à installer.
+## Lancer
 
-## Option B — Déployer une vraie URL publique (~2 min)
+Double-cliquez sur `index.html`. C'est tout.
 
-**Netlify Drop (le plus simple) :** https://app.netlify.com/drop → glissez-déposez `index.html` → URL immédiate (`https://votre-nom.netlify.app`). Créez un compte gratuit pour la rendre permanente.
+## Déployer une URL publique (2 min)
 
-**Vercel :** https://vercel.com → « Add New… › Project » → importez le dossier → Deploy.
+**Netlify Drop** — https://app.netlify.com/drop → glissez `index.html` → URL immédiate.
+**Vercel** — https://vercel.com → Add New › Project → importez le dossier.
+**GitHub Pages** — Settings › Pages › branche `main`, dossier `/demo`.
 
-**GitHub Pages :** poussez `index.html` à la racine d'un dépôt → Settings › Pages › branche `main` → URL `https://<compte>.github.io/<repo>/`.
+## Ce que la démo montre
 
-> Fichier statique → n'importe quel hébergeur statique convient. Pas de serveur, pas de base de données.
+L'application affiche **les quatre couches de l'architecture** à l'écran :
 
-## Ce que fait la démo (v2)
-- **Patient virtuel** : âge, sexe, IMC, ancienneté, sensibilité à l'insuline, metformine.
-- **Emploi du temps de la journée** : heures de lever/coucher, des 3 repas, du créneau d'activité (durée + intensité). Le **sommeil** et la **dépense en kcal** sont déduits.
-- **Modulation circadienne** : la sensibilité à l'insuline décline sur la journée — un même repas fait un pic plus élevé le soir que le matin.
-- **Effets locaux** : marche après un repas → captation musculaire du glucose (aplatit le pic) ; exercice → baisse transitoire de la glycémie.
-- **Sortie** : courbe 24 h avec zone cible 70–180, bandes sommeil/activité, métriques (moyenne, temps dans la cible, pic, HbA1c estimée).
-- **Comparaison de scénarios** : figer une référence, tester « dîner plus tôt », « marche après le dîner », « réduire les glucides » et mesurer les deltas.
-- **Interprétabilité** : contribution de chaque facteur, dont « **Horaires des repas** » qui isole l'effet du timing circadien.
+| Couche | Ce qu'on voit |
+|---|---|
+| **0** — Emploi du temps | patient, repas (heure, glucides, fibres, IG), activités choisies dans un catalogue de 78 |
+| **1** — État métabolique | 8 concepts physiologiques mis à jour **au survol de la courbe** |
+| **2** — Glycémie prédite | 24 h au pas de 5 min, zone cible, bandes sommeil et activité |
+| **3** — États de risque | probabilités, tendance, et une explication **traçable** jusqu'au mécanisme |
 
-## Fondements scientifiques (avec références, pour le rapport)
-- **Rythme circadien de la tolérance au glucose** : le système circadien endogène et le désalignement circadien dégradent la tolérance au glucose par des mécanismes distincts. Scheer et al., *PNAS* (2015). https://www.pnas.org/doi/10.1073/pnas.1418955112
-- **Chrononutrition** : le moment des repas influence le contrôle glycémique dans le DT2. *Nutrition & Diabetes* (2020). https://www.nature.com/articles/s41387-020-0109-6
-- **Travail posté / manger le jour** : manger le jour prévient le désalignement circadien et l'intolérance au glucose en travail de nuit. *Science Advances* (2021). https://www.science.org/doi/10.1126/sciadv.abg9910
-- **Disruption circadienne & DT2** : revue des implications métaboliques. *Diabetologia* (2020). https://link.springer.com/article/10.1007/s00125-019-05059-6
-- **Exercice → glycémie** : la contraction musculaire augmente la captation du glucose indépendamment de l'insuline (GLUT4/AMPK) et améliore la sensibilité pendant 24–48 h. Voir *Syncing Exercise with Meals and Circadian Clocks*, PMC. https://pmc.ncbi.nlm.nih.gov/articles/PMC6295221/
+Plus un **comparateur d'interventions** qui simule six journées alternatives et les classe par effet sur le pic glycémique.
 
-## Note honnête pour la présentation
-Le moteur est un **modèle physiologique simplifié** : réponse post-prandiale de type gamma + phénomène de l'aube + **modulation circadienne** de la sensibilité à l'insuline + effets locaux de l'exercice. Il est calibré pour des courbes réalistes à visée **pédagogique**, pas validé cliniquement — et c'est le message de votre conclusion : les vrais défis sont la **validation**, l'**équité** et l'**interprétabilité fidèle**. Pour la version publication, la modulation circadienne serait **apprise sur données horodatées** (ShanghaiT2DM contient les horaires des repas et le CGM horodaté).
+## Le moment fort de la présentation
+
+Le comparateur. Il produit un classement mesuré :
+
+| Intervention | Effet sur le pic |
+|---|---:|
+| Réduire les glucides de 40 % | −46 mg/dL |
+| Passer tous les repas en IG bas | −43 mg/dL |
+| Marche de 30 min après chaque repas | −16 mg/dL |
+| 45 min de vélo en fin de journée | −14 mg/dL |
+| Avancer le dernier repas de 3 h | −4 mg/dL |
+| Dormir une heure de plus | 0 mg/dL |
+
+C'est ce qu'un jumeau numérique permet et qu'une simple mesure ne permet pas : **comparer des futurs qui n'ont pas eu lieu**. Et le résultat est honnête — il contredit l'idée reçue selon laquelle l'heure du repas pèserait autant que sa composition.
+
+## Fondements physiologiques
+
+Le moteur est un **port fidèle en JavaScript** des couches 0-1 Python (`glucotwin.day_concepts`), donc cohérent avec le code scientifique du dépôt :
+
+- valeurs MET du **2024 Adult Compendium** (78 activités)
+- oxydation des substrats par les **équations de Frayn (1983)**
+- cinétique d'absorption gamma, modulée par l'index glycémique et les fibres
+- **rythme circadien** de la sensibilité à l'insuline — un même repas de 65 g fait **+65 mg/dL à 8h contre +87 mg/dL à 22h**
+- **phénomène de l'aube** réglable, ~+19 mg/dL avant le réveil à intensité 1
+- production hépatique freinée par l'insuline, stimulée à l'effort et à l'aube
+
+## Limite à énoncer
+
+Modèle physiologique **simplifié, non validé cliniquement**, à visée pédagogique. Il ne recommande aucune dose ni traitement. Pour la version scientifique, la couche 2 est apprise sur données réelles (voir `notebooks/`).

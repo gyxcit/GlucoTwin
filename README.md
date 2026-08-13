@@ -8,7 +8,7 @@
 
 ## La thèse
 
-> À 30 minutes, la prévision glycémique est un problème **saturé** : la persistance — « la glycémie ne bougera pas » — est quasi imbattable. La question utile n'est donc pas *« quel modèle a la plus petite erreur »*, mais **où** la prévision a une valeur clinique réelle, et **sait-on quand elle est fiable ?**
+> À 30 minutes, la prévision glycémique est un problème **saturé** : sur données réelles, la persistance — « la glycémie ne bougera pas » — est quasi imbattable (13,39 mg/dL contre 13,11 pour un modèle entraîné, benchmark CGMacros). La question utile n'est donc pas *« quel modèle a la plus petite erreur »*, mais **où** la prévision a une valeur clinique réelle, et **sait-on quand elle est fiable ?**
 
 Ce dépôt répond en mesurant trois choses que la MAE seule ne montre pas : l'effet de l'**horizon**, la capacité à **détecter les événements**, et la **fiabilité annoncée** des prédictions.
 
@@ -73,16 +73,36 @@ pytest -q
 
 Sur cohorte **synthétique** (45 patients virtuels), horizon variable, modèle *HistGradientBoosting*, évaluation *leave-one-patient-out* :
 
-| Horizon | MAE modèle | MAE persistance | Gain | p |
-|---:|---:|---:|---:|---:|
-| 30 min | 6,57 | 7,31 | **+0,74** | 1,2e-02 |
-| 60 min | 9,60 | 11,12 | **+1,52** | 2,8e-03 |
-| 90 min | 10,95 | 13,63 | **+2,68** | 8,7e-04 |
-| 120 min | 11,20 | 15,35 | **+4,14** | 4,4e-06 |
+| Horizon | MAE modèle | MAE persistance | Gain | p | Patients gagnés |
+|---:|---:|---:|---:|---:|---:|
+| 30 min | 6,25 | 8,30 | **+2,06** | 8,0e-09 | 40/45 |
+| 60 min | 10,13 | 12,96 | **+2,83** | 7,3e-08 | 39/45 |
+| 90 min | 11,85 | 16,04 | **+4,19** | 9,0e-09 | 39/45 |
+| 120 min | 12,51 | 18,23 | **+5,72** | 1,7e-11 | 42/45 |
 
-**Le résultat le plus intéressant est une contradiction.** Pendant que le gain en MAE *monte* avec l'horizon, la **sensibilité de détection des hyperglycémies s'effondre** (28 % → 10 %). La cause est mesurée : l'écart-type des prédictions tombe à 0,77 fois celui des vraies valeurs — c'est de la **régression vers la moyenne**. Le modèle devient meilleur « en moyenne » et plus mauvais « quand ça compte ».
+L'avantage **triple** entre 30 et 120 minutes, et l'ablation des concepts est monotone :
+19,00 mg/dL avec l'historique glycémique seul → 13,81 en ajoutant les repas → 12,84 avec
+l'activité → **12,51** avec les modulateurs, soit **−34 %**.
 
-> ⚠️ **Ces chiffres valident le logiciel, pas la science.** La cohorte est **entièrement simulée** : aucun patient réel n'a été utilisé. Ils prouvent que la chaîne et le protocole fonctionnent. Les conclusions physiologiques exigent CGMacros.
+**Le résultat le plus intéressant est une contradiction.** Pendant que le gain en MAE *triple* avec l'horizon, la **sensibilité de détection des hyperglycémies s'effondre** : 44,6 % → 11,4 % → 3,8 % → **1,7 %**. La cause est mesurée : l'écart-type des prédictions tombe de 0,87 à 0,69 fois celui des vraies valeurs — c'est de la **régression vers la moyenne**. Le modèle devient meilleur « en moyenne » et quasiment aveugle « quand ça compte ».
+
+À 120 minutes, il gagne 5,72 mg/dL sur la persistance **et ne détecte plus que 1,7 % des hyperglycémies**. Optimiser la MAE ne rend pas un jumeau cliniquement utile.
+
+> ⚠️ **Ces chiffres valident le logiciel, pas la science.** La cohorte est **entièrement simulée** : aucun patient réel n'a été utilisé.
+>
+> En particulier, la glycémie synthétique est engendrée à partir des concepts que le modèle reçoit : la tâche est **plus facile qu'en réalité**, surtout à court horizon. Sur les vraies données de CGMacros, un modèle comparable obtient 13,11 mg/dL contre 13,39 pour la persistance à 30 min — quasiment ex æquo. **Ce qui se transférera aux données réelles, c'est la pente, pas les valeurs.**
+
+### Figures
+
+Les figures du dernier run complet sont dans [`docs/figures/`](docs/figures/) :
+
+| Figure | Ce qu'elle montre |
+|---|---|
+| `02_horizons.png` | **la figure centrale** — l'écart se creuse, avec la dispersion patient par patient |
+| `03_ablation.png` | l'apport de chaque groupe de concepts |
+| `04_importance.png` | ce sur quoi le modèle s'appuie vraiment |
+| `05_mae_vs_clinique.png` | **la contradiction** — MAE et clinique disent l'inverse |
+| `07_conforme.png` | la couverture des intervalles |
 
 ---
 
@@ -96,7 +116,7 @@ Trois règles, tenues par construction dans `glucotwin/layer2/evaluation.py` :
 
 S'y ajoutent des métriques **cliniques** : erreur par zone glycémique et sensibilité de détection des événements — parce qu'une MAE excellente peut coexister avec une incapacité totale à annoncer une hypoglycémie.
 
-**Limite connue et assumée :** la couverture conforme observée (≈ 87 %) est légèrement sous la cible (90 %). La garantie suppose des données échangeables, or on calibre sur certains patients et on teste sur un patient jamais vu. Piste : *Mondrian conformal* ou calibration sur les premiers jours du patient lui-même.
+**Sur la couverture conforme :** avec 45 patients, la couverture observée est de **89,2 à 89,8 % pour 90 % visés** — la garantie tient. Elle se dégradait à 84–88 % sur de petits échantillons (une dizaine de patients), la calibration inter-patients n'étant alors pas assez fournie. À surveiller sur données réelles, où le décalage entre patients est plus marqué ; piste en réserve : *Mondrian conformal* ou calibration sur les premiers jours du patient lui-même.
 
 ---
 

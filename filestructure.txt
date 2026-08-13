@@ -1,0 +1,52 @@
+|-- .github
+    |-- workflows
+        |-- ci.yml
+|-- .gitignore
+|-- data
+    |-- .gitkeep
+|-- demo
+    |-- DEPLOIEMENT.md
+    |-- index.html
+|-- docs
+    |-- 01_revue_litterature.md
+    |-- 02_etat_de_lart_cible.md
+    |-- 03_architecture.md
+    |-- 04_plan_projet.md
+    |-- 05_feuille_de_route_publication.md
+    |-- 06_moteur_metabolique.md
+    |-- figures
+        |-- 00_cohorte.png
+        |-- 01_journee.png
+        |-- 02_horizons.png
+        |-- 03_ablation.png
+        |-- 04_importance.png
+        |-- 05_mae_vs_clinique.png
+        |-- 06_zones.png
+        |-- 07_conforme.png
+|-- LICENSE
+|-- notebooks
+    |-- couche2_prevision.ipynb
+|-- NOTICE.md
+|-- POUSSER_SUR_GITHUB.md
+|-- pyproject.toml
+|-- README.md
+|-- requirements.txt
+|-- scripts
+    |-- run_layer2.py
+    |-- sensitivity.py
+|-- src
+    |-- glucotwin
+        |-- day_concepts.py
+        |-- layer2
+            |-- cohort.py
+            |-- evaluation.py
+            |-- features.py
+            |-- models.py
+            |-- __init__.py
+        |-- metabolic_engine.py
+        |-- met_activities.csv
+        |-- __init__.py
+|-- tests
+    |-- test_day_concepts.py
+    |-- test_layer2.py
+    |-- test_metabolic.py

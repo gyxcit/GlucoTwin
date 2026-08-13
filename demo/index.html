@@ -2,532 +2,654 @@
 <html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GlucoTwin — Jumeau numérique du patient diabétique de type 2</title>
 <style>
-  :root{
-    color-scheme: light;
-    --page:#f9f9f7; --surface-1:#ffffff; --surface-2:#fcfcfb;
-    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
-    --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
-    --series-1:#2a78d6; --series-2:#eb6834;
-    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
-    --good-text:#006300;
-    --band:rgba(12,163,12,0.08);
-    --sleepband:rgba(74,58,167,0.09);
-    --exband:rgba(235,104,52,0.12);
-    --shadow:0 1px 2px rgba(11,11,11,0.06),0 6px 20px rgba(11,11,11,0.05);
-  }
-  :root[data-theme="dark"]{
-    color-scheme: dark;
-    --page:#0d0d0d; --surface-1:#1a1a19; --surface-2:#1f1f1e;
-    --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
-    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
-    --series-1:#3987e5; --series-2:#d95926;
-    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
-    --good-text:#0ca30c;
-    --band:rgba(12,163,12,0.12);
-    --sleepband:rgba(144,133,233,0.13);
-    --exband:rgba(217,89,38,0.16);
-    --shadow:0 1px 2px rgba(0,0,0,0.4),0 6px 20px rgba(0,0,0,0.35);
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{background:var(--page); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.45; -webkit-font-smoothing:antialiased;}
-  .wrap{max-width:1280px;margin:0 auto;padding:20px 22px 48px}
-  header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
-  .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--series-1),#1c5cab);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:19px;flex:0 0 auto}
-  h1{font-size:19px;margin:0;font-weight:650;letter-spacing:-0.01em}
-  .sub{color:var(--ink-2);font-size:12.5px;margin-top:2px}
-  .badges{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
-  .badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--surface-2);border:1px solid var(--border);color:var(--ink-2)}
-  .theme-btn{border:1px solid var(--border);background:var(--surface-1);color:var(--ink-2);border-radius:9px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit}
-  .theme-btn:hover{color:var(--ink)}
-  .grid-main{display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
-  @media(max-width:940px){.grid-main{grid-template-columns:1fr}}
-  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
-  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin:0 0 12px;font-weight:600}
-  .card + .card{margin-top:16px}
-  .field{margin-bottom:13px}
-  .field:last-child{margin-bottom:0}
-  .field .lab{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
-  .field .lab .name{font-size:13px;color:var(--ink)}
-  .field .lab .val{font-size:12.5px;color:var(--series-1);font-weight:650;font-variant-numeric:tabular-nums}
-  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:6px;background:var(--grid);outline:none;margin:6px 0 2px}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--series-1);border:2px solid var(--surface-1);box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer}
-  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--series-1);border:2px solid var(--surface-1);cursor:pointer}
-  .schedGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
-  .seg{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:3px}
-  .seg button{flex:1;border:none;background:transparent;color:var(--ink-2);padding:6px 4px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
-  .seg button.active{background:var(--series-1);color:#fff;font-weight:600}
-  .toggle-row{display:flex;align-items:center;justify-content:space-between}
-  .switch{position:relative;width:44px;height:24px;flex:0 0 auto}
-  .switch input{opacity:0;width:0;height:0}
-  .slider-sw{position:absolute;inset:0;background:var(--grid);border-radius:20px;transition:.15s;cursor:pointer}
-  .slider-sw:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
-  .switch input:checked + .slider-sw{background:var(--good)}
-  .switch input:checked + .slider-sw:before{transform:translateX(20px)}
-  .readout{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;margin-top:4px}
-  .readout b{color:var(--ink);font-variant-numeric:tabular-nums}
-  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-  @media(max-width:620px){.metrics{grid-template-columns:repeat(2,1fr)}}
-  .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;padding:13px 14px;box-shadow:var(--shadow)}
-  .tile .tlab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-  .tile .tval{font-size:25px;font-weight:680;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1.05}
-  .tile .tunit{font-size:12.5px;color:var(--ink-2);font-weight:500;margin-left:3px}
-  .tile .tdelta{font-size:11.5px;margin-top:3px;font-variant-numeric:tabular-nums}
-  .up{color:var(--critical)} .down{color:var(--good-text)} .flat{color:var(--muted)}
-  .chartcard{position:relative}
-  .chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px}
-  .legend{display:flex;gap:13px;align-items:center;font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
-  .legend .lg{display:flex;align-items:center;gap:6px}
-  .legend .sw{width:14px;height:3px;border-radius:2px}
-  .legend .bx{width:12px;height:11px;border-radius:3px}
-  svg{display:block;width:100%;height:auto;overflow:visible}
-  .t-tick{fill:var(--muted);font-size:11px}
-  .grid-line{stroke:var(--grid);stroke-width:1}
-  .axis-line{stroke:var(--axis);stroke-width:1}
-  .thr-line{stroke:var(--axis);stroke-width:1;stroke-dasharray:3 3}
-  .gluc-line{fill:none;stroke:var(--series-1);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
-  .ref-line{fill:none;stroke:var(--series-2);stroke-width:2;stroke-dasharray:5 4;stroke-linejoin:round;stroke-linecap:round}
-  .gluc-area{fill:url(#gfill);opacity:.9}
-  .band-lab{fill:var(--muted);font-size:10px}
-  .tooltip{position:absolute;pointer-events:none;background:var(--surface-1);border:1px solid var(--border);border-radius:9px;padding:7px 10px;font-size:12px;box-shadow:var(--shadow);opacity:0;transition:opacity .08s;z-index:5;min-width:118px}
-  .tooltip .tt-t{color:var(--muted);font-size:11px;margin-bottom:2px}
-  .tooltip .tt-v{font-weight:650;font-variant-numeric:tabular-nums}
-  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-  .act{border:1px solid var(--border);background:var(--surface-2);color:var(--ink);border-radius:9px;padding:8px 12px;font-size:12.5px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
-  .act:hover{border-color:var(--series-1);color:var(--series-1)}
-  .act.primary{background:var(--series-1);color:#fff;border-color:var(--series-1)}
-  .act.primary:hover{color:#fff;opacity:.92}
-  .interp-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12.5px}
-  .interp-row .iname{width:130px;flex:0 0 auto;color:var(--ink-2);text-align:right}
-  .interp-row .ibar-wrap{flex:1;position:relative;height:20px}
-  .interp-row .ibar{position:absolute;top:2px;height:16px;border-radius:4px}
-  .interp-row .ival{font-size:11.5px;font-variant-numeric:tabular-nums;width:52px;flex:0 0 auto}
-  .interp-center{position:absolute;top:0;bottom:0;width:1px;background:var(--axis)}
-  .note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5}
-  .foot{margin-top:24px;padding-top:16px;border-top:1px solid var(--border);font-size:11.5px;color:var(--muted);line-height:1.6}
-  .pill{display:inline-block;padding:1px 7px;border-radius:12px;font-size:11px;font-weight:600}
-  details.demo{margin-top:16px;background:var(--surface-1);border:1px solid var(--border);border-radius:13px;padding:6px 16px;box-shadow:var(--shadow)}
-  details.demo summary{cursor:pointer;padding:10px 0;font-weight:600;font-size:13px}
-  details.demo ol{margin:4px 0 12px;padding-left:20px;color:var(--ink-2)}
-  details.demo li{margin-bottom:5px}
+:root{
+  color-scheme:light;
+  --page:#f5f5f2; --surf:#fff; --surf2:#fbfbf9;
+  --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --bd:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#4a3aa7;
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b; --goodtx:#006300;
+  --band:rgba(12,163,12,.08); --sleep:rgba(74,58,167,.09); --exb:rgba(235,104,52,.13);
+  --sh:0 1px 2px rgba(11,11,11,.05),0 4px 16px rgba(11,11,11,.05);
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0d0d0d; --surf:#1a1a19; --surf2:#1f1f1e;
+  --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --bd:rgba(255,255,255,.10);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#9085e9;
+  --goodtx:#0ca30c;
+  --band:rgba(12,163,12,.13); --sleep:rgba(144,133,233,.13); --exb:rgba(217,89,38,.17);
+  --sh:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--page);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1400px;margin:0 auto;padding:18px 20px 40px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--s1),#1c5cab);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;flex:0 0 auto}
+h1{font-size:19px;margin:0;font-weight:650;letter-spacing:-.01em}
+.sub{color:var(--ink2);font-size:12.5px;margin-top:2px}
+.btn{border:1px solid var(--bd);background:var(--surf);color:var(--ink2);border-radius:9px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn:hover{color:var(--ink);border-color:var(--s1)}
+.btn.pri{background:var(--s1);color:#fff;border-color:var(--s1)}
+.btn.pri:hover{color:#fff;opacity:.92}
+
+/* bandeau des couches */
+.layers{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+@media(max-width:900px){.layers{grid-template-columns:repeat(2,1fr)}}
+.lay{background:var(--surf);border:1px solid var(--bd);border-radius:11px;padding:9px 12px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.lay:after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px}
+.lay:nth-child(1):after{background:var(--s4)} .lay:nth-child(2):after{background:var(--s3)}
+.lay:nth-child(3):after{background:var(--s1)} .lay:nth-child(4):after{background:var(--s2)}
+.lay .n{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.lay .t{font-size:13px;font-weight:600;margin-top:1px}
+.lay .d{font-size:11.5px;color:var(--ink2);margin-top:1px}
+
+.grid{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+@media(max-width:1050px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surf);border:1px solid var(--bd);border-radius:13px;padding:14px;box-shadow:var(--sh)}
+.card+.card{margin-top:14px}
+.card h2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 11px;font-weight:600;display:flex;align-items:center;gap:7px}
+.tag{font-size:9.5px;padding:1px 6px;border-radius:10px;background:var(--surf2);border:1px solid var(--bd);color:var(--muted);letter-spacing:.02em}
+.f{margin-bottom:11px}.f:last-child{margin-bottom:0}
+.lb{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.lb .k{font-size:12.5px}.lb .v{font-size:12px;color:var(--s1);font-weight:650;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:6px;background:var(--grid);outline:none;margin:5px 0 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--s1);border:2px solid var(--surf);box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--s1);border:2px solid var(--surf);cursor:pointer}
+select,input[type=number]{width:100%;border:1px solid var(--bd);background:var(--surf2);color:var(--ink);border-radius:7px;padding:6px 8px;font:inherit;font-size:12.5px}
+.seg{display:flex;gap:3px;background:var(--surf2);border:1px solid var(--bd);border-radius:8px;padding:3px}
+.seg button{flex:1;border:0;background:none;color:var(--ink2);padding:5px 3px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+.seg button.on{background:var(--s1);color:#fff;font-weight:600}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sw{position:relative;width:40px;height:22px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sl{position:absolute;inset:0;background:var(--grid);border-radius:20px;transition:.15s;cursor:pointer}
+.sl:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
+.sw input:checked+.sl{background:var(--good)}
+.sw input:checked+.sl:before{transform:translateX(18px)}
+
+/* listes repas / activites */
+.item{background:var(--surf2);border:1px solid var(--bd);border-radius:9px;padding:8px 9px;margin-bottom:7px}
+.item .hd{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px}
+.item .hd b{font-size:12.5px;font-weight:600}
+.item .x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:0 2px}
+.item .x:hover{color:var(--crit)}
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mini label{font-size:10.5px;color:var(--muted);display:block;margin-bottom:2px}
+.add{width:100%;border:1px dashed var(--bd);background:none;color:var(--ink2);border-radius:9px;padding:7px;font:inherit;font-size:12.5px;cursor:pointer}
+.add:hover{border-color:var(--s1);color:var(--s1)}
+
+/* tuiles */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:14px}
+@media(max-width:700px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--surf);border:1px solid var(--bd);border-radius:12px;padding:11px 13px;box-shadow:var(--sh)}
+.tile .l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tile .v{font-size:24px;font-weight:680;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1;margin-top:2px}
+.tile .u{font-size:12px;color:var(--ink2);font-weight:500;margin-left:2px}
+.tile .d{font-size:11px;margin-top:2px;font-variant-numeric:tabular-nums}
+.up{color:var(--crit)}.dn{color:var(--goodtx)}.fl{color:var(--muted)}
+
+svg{display:block;width:100%;height:auto;overflow:visible}
+.tk{fill:var(--muted);font-size:10.5px}
+.gl{stroke:var(--grid);stroke-width:1}
+.ax{stroke:var(--axis);stroke-width:1}
+.th{stroke:var(--axis);stroke-width:1;stroke-dasharray:3 3}
+.ln{fill:none;stroke:var(--s1);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.rf{fill:none;stroke:var(--s2);stroke-width:2;stroke-dasharray:5 4;stroke-linejoin:round}
+.ar{fill:url(#gf);opacity:.9}
+.bl{fill:var(--muted);font-size:9.5px}
+.tt{position:absolute;pointer-events:none;background:var(--surf);border:1px solid var(--bd);border-radius:9px;padding:7px 10px;font-size:12px;box-shadow:var(--sh);opacity:0;transition:opacity .08s;z-index:5;min-width:120px}
+.tt .t{color:var(--muted);font-size:10.5px}
+.tt .v{font-weight:650;font-variant-numeric:tabular-nums}
+
+/* concepts */
+.cps{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+@media(max-width:900px){.cps{grid-template-columns:repeat(2,1fr)}}
+.cp{background:var(--surf2);border:1px solid var(--bd);border-radius:9px;padding:8px 10px}
+.cp .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;line-height:1.3;min-height:26px}
+.cp .v{font-size:17px;font-weight:660;font-variant-numeric:tabular-nums;margin-top:1px}
+.cp .u{font-size:10.5px;color:var(--ink2);font-weight:500;margin-left:2px}
+.bar{height:3px;border-radius:2px;background:var(--grid);margin-top:5px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:2px}
+
+/* etats */
+.states{display:flex;flex-wrap:wrap;gap:8px}
+.st{display:flex;align-items:center;gap:7px;border:1px solid var(--bd);border-radius:9px;padding:7px 11px;background:var(--surf2);font-size:12.5px}
+.st .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.st b{font-variant-numeric:tabular-nums}
+.expl{margin-top:11px;padding:11px 13px;border-radius:10px;background:var(--surf2);border:1px solid var(--bd);font-size:12.5px;line-height:1.55}
+.expl .h{font-weight:650;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.expl .why{color:var(--muted);font-size:11px;margin-top:6px;font-style:italic}
+.cmpr{display:flex;align-items:center;gap:9px;margin-bottom:6px;font-size:12.5px}
+.cmpr .nm{width:190px;flex:0 0 auto;color:var(--ink2)}
+.cmpr .tr{flex:1;height:17px;background:var(--surf2);border-radius:4px;position:relative;overflow:hidden}
+.cmpr .tr i{position:absolute;left:0;top:0;height:100%;border-radius:4px}
+.cmpr .vl{width:74px;flex:0 0 auto;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.acts{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.note{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.5}
+details{margin-top:14px;background:var(--surf);border:1px solid var(--bd);border-radius:12px;padding:4px 14px;box-shadow:var(--sh)}
+summary{cursor:pointer;padding:9px 0;font-weight:600;font-size:12.5px}
+details ol{margin:2px 0 10px;padding-left:19px;color:var(--ink2);font-size:12.5px}
+details li{margin-bottom:4px}
+.foot{margin-top:20px;padding-top:14px;border-top:1px solid var(--bd);font-size:11px;color:var(--muted);line-height:1.6}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <div class="logo">GT</div>
-      <div>
-        <h1>GlucoTwin</h1>
-        <div class="sub">Jumeau numérique du patient diabétique de type 2 — piloté par l'emploi du temps & le rythme circadien</div>
-        <div class="badges">
-          <span class="badge">Prototype de démonstration</span>
-          <span class="badge">Modèle physiologique + circadien</span>
-          <span class="badge">Projet AI for Health · PGE5</span>
-        </div>
-      </div>
-    </div>
-    <button class="theme-btn" id="themeBtn">◐ Thème</button>
-  </header>
-
-  <div class="grid-main">
-    <!-- LEFT : CONTROLS -->
+<header>
+  <div class="brand">
+    <div class="logo">GT</div>
     <div>
-      <div class="card">
-        <h2>Patient virtuel</h2>
-        <div class="field">
-          <div class="lab"><span class="name">Âge</span><span class="val" id="ageV">54 ans</span></div>
-          <input type="range" id="age" min="30" max="80" value="54">
-        </div>
-        <div class="field">
-          <div class="lab"><span class="name">Sexe</span></div>
-          <div class="seg" id="sexSeg"><button data-v="F">Femme</button><button data-v="H" class="active">Homme</button></div>
-        </div>
-        <div class="field">
-          <div class="lab"><span class="name">IMC</span><span class="val" id="bmiV">29 kg/m²</span></div>
-          <input type="range" id="bmi" min="20" max="42" value="29" step="0.5">
-        </div>
-        <div class="field">
-          <div class="lab"><span class="name">Ancienneté du diabète</span><span class="val" id="durV">6 ans</span></div>
-          <input type="range" id="dur" min="0" max="25" value="6">
-        </div>
-        <div class="field">
-          <div class="lab"><span class="name">Sensibilité à l'insuline</span><span class="val" id="sensV">45 / 100</span></div>
-          <input type="range" id="sens" min="10" max="95" value="45">
-        </div>
-        <div class="field toggle-row">
-          <span class="name">Metformine</span>
-          <label class="switch"><input type="checkbox" id="metf" checked><span class="slider-sw"></span></label>
-        </div>
-      </div>
+      <h1>GlucoTwin</h1>
+      <div class="sub">Jumeau numérique du patient diabétique de type 2 — de l'emploi du temps à la recommandation</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn" id="themeBtn">◐ Thème</button>
+  </div>
+</header>
 
-      <div class="card">
-        <h2>🗓️ Emploi du temps de la journée</h2>
-        <div class="schedGrid">
-          <div class="field" style="margin:0">
-            <div class="lab"><span class="name">Lever</span><span class="val" id="wakeV">07h00</span></div>
-            <input type="range" id="wake" min="4.5" max="10" value="7" step="0.25">
-          </div>
-          <div class="field" style="margin:0">
-            <div class="lab"><span class="name">Coucher</span><span class="val" id="bedV">23h30</span></div>
-            <input type="range" id="bed" min="20" max="28" value="23.5" step="0.25">
-          </div>
-          <div class="field" style="margin:0">
-            <div class="lab"><span class="name">Petit-déj.</span><span class="val" id="tBV">07h45</span></div>
-            <input type="range" id="tB" min="5" max="11" value="7.75" step="0.25">
-          </div>
-          <div class="field" style="margin:0">
-            <div class="lab"><span class="name">Déjeuner</span><span class="val" id="tLV">12h45</span></div>
-            <input type="range" id="tL" min="11" max="15.5" value="12.75" step="0.25">
-          </div>
-          <div class="field" style="margin:0">
-            <div class="lab"><span class="name">Dîner</span><span class="val" id="tDV">21h00</span></div>
-            <input type="range" id="tD" min="17" max="23" value="21.0" step="0.25">
-          </div>
-          <div class="field" style="margin:0">
-            <div class="lab"><span class="name">Activité — heure</span><span class="val" id="exStartV">08h00</span></div>
-            <input type="range" id="exStart" min="5" max="22" value="8" step="0.25">
-          </div>
-          <div class="field" style="margin:0">
-            <div class="lab"><span class="name">Activité — durée</span><span class="val" id="exDurV">20 min</span></div>
-            <input type="range" id="exDur" min="0" max="90" value="20" step="5">
-          </div>
-          <div class="field" style="margin:0">
-            <div class="lab"><span class="name">Intensité</span></div>
-            <div class="seg" id="metSeg"><button data-v="2.8">Léger</button><button data-v="4.8" class="active">Modéré</button><button data-v="7.5">Intense</button></div>
-          </div>
-        </div>
-        <div class="readout"><span>Sommeil (déduit)</span><span><b id="slpOut">7,5</b> h</span></div>
-        <div class="readout"><span>Dépense de l'activité</span><span>≈ <b id="kcalOut">150</b> kcal</span></div>
-      </div>
+<div class="layers">
+  <div class="lay"><div class="n">Couche 0</div><div class="t">Emploi du temps</div><div class="d">ce que la personne fait</div></div>
+  <div class="lay"><div class="n">Couche 1</div><div class="t">État métabolique</div><div class="d">physiologie interprétable</div></div>
+  <div class="lay"><div class="n">Couche 2</div><div class="t">Glycémie prédite</div><div class="d">24 h, pas de 5 min</div></div>
+  <div class="lay"><div class="n">Couche 3</div><div class="t">États de risque</div><div class="d">des chiffres au sens</div></div>
+</div>
 
-      <div class="card">
-        <h2>Mode de vie</h2>
-        <div class="field">
-          <div class="lab"><span class="name">Glucides par repas</span><span class="val" id="carbV">65 g</span></div>
-          <input type="range" id="carb" min="15" max="120" value="65">
-        </div>
-        <div class="field">
-          <div class="lab"><span class="name">Index glycémique</span></div>
-          <div class="seg" id="giSeg"><button data-v="0.78">Bas</button><button data-v="1.0" class="active">Moyen</button><button data-v="1.28">Haut</button></div>
-        </div>
-        <div class="field">
-          <div class="lab"><span class="name">Niveau de stress</span><span class="val" id="strV">40 / 100</span></div>
-          <input type="range" id="str" min="0" max="100" value="40" step="5">
-        </div>
-      </div>
+<div class="grid">
+  <!-- ============ COLONNE GAUCHE ============ -->
+  <div>
+    <div class="card">
+      <h2>Patient <span class="tag">couche 0</span></h2>
+      <div class="f"><div class="lb"><span class="k">Poids</span><span class="v" id="wV">82 kg</span></div><input type="range" id="w" min="45" max="140" value="82"></div>
+      <div class="f"><div class="lb"><span class="k">Sensibilité à l'insuline</span><span class="v" id="isV">38 / 100</span></div><input type="range" id="is" min="10" max="95" value="38"></div>
+      <div class="f"><div class="lb"><span class="k">Ancienneté du diabète</span><span class="v" id="duV">6 ans</span></div><input type="range" id="du" min="0" max="25" value="6"></div>
+      <div class="f"><div class="lb"><span class="k">Phénomène de l'aube</span><span class="v" id="dwV">1,0</span></div><input type="range" id="dw" min="0" max="1.6" step="0.1" value="1"></div>
+      <div class="f"><div class="lb"><span class="k">Stress</span><span class="v" id="stV">40 / 100</span></div><input type="range" id="st" min="0" max="100" step="5" value="40"></div>
+      <div class="f row"><span class="k" style="font-size:12.5px">Metformine</span>
+        <label class="sw"><input type="checkbox" id="mf" checked><span class="sl"></span></label></div>
     </div>
 
-    <!-- RIGHT : OUTPUT -->
-    <div>
-      <div class="metrics">
-        <div class="tile"><div class="tlab">Glycémie moyenne</div><div class="tval"><span id="mMean">—</span><span class="tunit">mg/dL</span></div><div class="tdelta" id="dMean">&nbsp;</div></div>
-        <div class="tile"><div class="tlab">Temps dans la cible</div><div class="tval"><span id="mTir">—</span><span class="tunit">%</span></div><div class="tdelta" id="dTir">&nbsp;</div></div>
-        <div class="tile"><div class="tlab">Pic glycémique</div><div class="tval"><span id="mPeak">—</span><span class="tunit">mg/dL</span></div><div class="tdelta" id="dPeak">&nbsp;</div></div>
-        <div class="tile"><div class="tlab">HbA1c estimée</div><div class="tval"><span id="mA1c">—</span><span class="tunit">%</span></div><div class="tdelta" id="dA1c">&nbsp;</div></div>
+    <div class="card">
+      <h2>Journée <span class="tag">couche 0</span></h2>
+      <div class="mini" style="margin-bottom:11px">
+        <div><label>Lever</label><input type="number" id="wk" min="3" max="12" step="0.25" value="7"></div>
+        <div><label>Coucher</label><input type="number" id="bd" min="18" max="27" step="0.25" value="23"></div>
       </div>
-
-      <div class="card chartcard">
-        <div class="chart-head">
-          <h2 style="margin:0">Glycémie prédite sur 24 h</h2>
-          <div class="legend" id="legend">
-            <span class="lg"><span class="sw" style="background:var(--series-1)"></span>Scénario actuel</span>
-            <span class="lg" id="lgRef" style="display:none"><span class="sw" style="background:var(--series-2)"></span>Référence figée</span>
-            <span class="lg"><span class="bx" style="background:var(--band)"></span>Cible 70–180</span>
-            <span class="lg"><span class="bx" style="background:var(--sleepband)"></span>Sommeil</span>
-            <span class="lg"><span class="bx" style="background:var(--exband)"></span>Activité</span>
-          </div>
-        </div>
-        <div id="chartHost" style="position:relative">
-          <svg id="chart" viewBox="0 0 920 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Courbe de glycémie prédite sur 24 heures"></svg>
-          <div class="tooltip" id="tt"></div>
-        </div>
-        <div class="actions">
-          <button class="act primary" id="freezeBtn">📌 Figer comme référence</button>
-          <button class="act" id="clearBtn" style="display:none">✕ Effacer la référence</button>
-          <button class="act" data-reco="dinner">🕐 Dîner plus tôt (18h)</button>
-          <button class="act" data-reco="walk">🚶 Marche après le dîner</button>
-          <button class="act" data-reco="carb">🥗 Réduire les glucides</button>
-          <button class="act" data-reco="reset">↺ Réinitialiser</button>
-        </div>
-        <div class="note"><b>Effet circadien :</b> la sensibilité à l'insuline suit l'horloge interne — meilleure le matin, plus faible le soir. Un même repas provoque donc un pic plus élevé le soir. Les bandes indiquent le sommeil et le créneau d'activité ; ▲ = repas.</div>
-      </div>
-
-      <div class="card">
-        <h2>Pourquoi cette prédiction ? — contribution estimée de chaque facteur</h2>
-        <div id="interp"></div>
-        <div class="note">Chaque barre estime de combien un facteur <b>élève</b> (<span style="color:var(--critical)">orange/rouge</span>) ou <b>abaisse</b> (<span style="color:var(--good-text)">vert</span>) la glycémie moyenne, par rapport à un profil de référence (glucides 45 g, IG moyen, <b>repas 8h/13h/19h</b>, activité 45 min modérée, stress nul, metformine, IMC 24). « Horaires des repas » capture précisément l'effet du <i>timing</i> circadien. Attribution un-facteur-à-la-fois, esprit SHAP.</div>
-      </div>
-
-      <details class="demo">
-        <summary>🎬 Guide de démonstration (≈ 3 min)</summary>
-        <ol>
-          <li><b>Le patient et sa journée</b> : présentez le jumeau et son emploi du temps. Notez le dîner tardif (20h30).</li>
-          <li><b>Figer la référence</b> (📌).</li>
-          <li><b>Montrer l'effet circadien</b> : cliquez « 🕐 Dîner plus tôt (18h) » — même repas, mais le pic du soir baisse nettement, le Temps dans la cible monte. C'est l'horloge interne, pas moins de glucides.</li>
-          <li><b>Marche après le dîner</b> : cliquez « 🚶 Marche après le dîner » — la glycémie post-dîner s'aplatit (captation musculaire du glucose).</li>
-          <li><b>Interprétabilité</b> : « Horaires des repas » apparaît comme un contributeur — le modèle explique pourquoi.</li>
-          <li><b>Limites</b> : modèle simplifié ; pour publier, la modulation circadienne serait apprise sur données horodatées (ShanghaiT2DM).</li>
-        </ol>
-      </details>
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px;font-weight:600">Repas</div>
+      <div id="meals"></div>
+      <button class="add" id="addMeal">+ ajouter un repas</button>
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px;font-weight:600">Activités</div>
+      <div id="acts"></div>
+      <button class="add" id="addAct">+ ajouter une activité</button>
     </div>
   </div>
 
-  <div class="foot">
-    <span class="pill" style="background:var(--band);color:var(--good-text)">Démo</span>
-    <b>Avertissement.</b> GlucoTwin est un prototype pédagogique. Les glycémies sont générées par un modèle physiologique simplifié intégrant une modulation circadienne, à des fins de démonstration ; il <b>ne doit pas</b> servir à une décision médicale. HbA1c estimée via ADAG : HbA1c(%) = (glycémie moyenne + 46,7) / 28,7. Dépense estimée : MET × 3,5 × poids / 200 × durée.<br>
-    Projet <i>Personalized Diabetes Monitoring Twin</i> — Cours AI for Health (PGE5, Prof. A. Kar). Groupe : Regis Likassi, Hakim Djomo, Jean Direl Nze, Xavier Ondo, Seth Ndinga.
+  <!-- ============ COLONNE DROITE ============ -->
+  <div>
+    <div class="tiles">
+      <div class="tile"><div class="l">Glycémie moyenne</div><div class="v"><span id="mMean">—</span><span class="u">mg/dL</span></div><div class="d" id="dMean">&nbsp;</div></div>
+      <div class="tile"><div class="l">Temps dans la cible</div><div class="v"><span id="mTir">—</span><span class="u">%</span></div><div class="d" id="dTir">&nbsp;</div></div>
+      <div class="tile"><div class="l">Pic glycémique</div><div class="v"><span id="mPeak">—</span><span class="u">mg/dL</span></div><div class="d" id="dPeak">&nbsp;</div></div>
+      <div class="tile"><div class="l">HbA1c estimée</div><div class="v"><span id="mA1c">—</span><span class="u">%</span></div><div class="d" id="dA1c">&nbsp;</div></div>
+    </div>
+
+    <div class="card" style="position:relative">
+      <h2>Glycémie prédite sur 24 h <span class="tag">couche 2</span>
+        <span style="margin-left:auto;font-size:11px;text-transform:none;letter-spacing:0;color:var(--ink2);font-weight:400" id="legend"></span></h2>
+      <div id="host" style="position:relative">
+        <svg id="chart" viewBox="0 0 940 330" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Glycémie prédite sur 24 heures"></svg>
+        <div class="tt" id="tt"></div>
+      </div>
+      <div class="acts">
+        <button class="btn pri" id="freeze">📌 Figer comme référence</button>
+        <button class="btn" id="clear" style="display:none">✕ Effacer</button>
+        <button class="btn" data-p="dinner">🕐 Dîner à 18h</button>
+        <button class="btn" data-p="walk">🚶 Marche après dîner</button>
+        <button class="btn" data-p="carb">🥗 −40 % de glucides</button>
+        <button class="btn" data-p="reset">↺ Réinitialiser</button>
+      </div>
+      <div class="note">Survolez la courbe : l'état métabolique ci-dessous se met à jour à l'instant pointé.</div>
+    </div>
+
+    <div class="card">
+      <h2>État métabolique <span class="tag">couche 1 — le goulot interprétable</span>
+        <span style="margin-left:auto;font-size:11px;text-transform:none;letter-spacing:0;color:var(--s1);font-weight:600" id="cpTime">12h00</span></h2>
+      <div class="cps" id="cps"></div>
+      <div class="note">Ces grandeurs ne sont pas apprises : elles sont calculées par des équations physiologiques (METs, équations de Frayn, cinétique d'absorption, rythme circadien). C'est ce qui rend la prédiction explicable.</div>
+    </div>
+
+    <div class="card">
+      <h2>Comparateur d'interventions <span class="tag">simulation contrefactuelle</span></h2>
+      <div id="cmp"></div>
+      <div class="note">Chaque barre simule une journée entière modifiée et mesure l'effet sur le pic glycémique. C'est ce qu'un jumeau numérique permet et qu'une simple mesure ne permet pas : <b>comparer des futurs qui n'ont pas eu lieu</b>.</div>
+    </div>
+
+    <div class="card">
+      <h2>États de risque <span class="tag">couche 3</span></h2>
+      <div class="states" id="states"></div>
+      <div class="expl" id="expl"></div>
+      <div class="note">Un jumeau ne doit pas afficher un chiffre, mais un état et sa cause. Chaque conseil pointe le concept qui l'a déclenché.</div>
+    </div>
+
+    <details>
+      <summary>🎬 Guide de démonstration (≈ 4 min)</summary>
+      <ol>
+        <li><b>Poser l'architecture</b> (bandeau du haut) : « notre jumeau ne va pas directement des données à la glycémie — il passe par un état métabolique lisible. C'est ce qui le rend explicable. »</li>
+        <li><b>Montrer le problème</b> : pic à 248 mg/dL vers 22h. Lire l'explication en bas : le modèle dit <i>pourquoi</i>, pas seulement <i>combien</i>.</li>
+        <li><b>Survoler la courbe</b> vers 22h : les concepts se mettent à jour. « À cet instant le corps absorbe encore X mg/min de glucides, et la sensibilité à l'insuline est tombée à Y. »</li>
+        <li><b>Le comparateur</b> — le moment fort. « Le jumeau simule six journées alternatives et les classe. Réduire les glucides et l'index glycémique dominent ; avancer le repas ne pèse que −4 mg/dL. » Insister : <b>c'est un résultat, pas une intuition</b>, et il contredit l'idée reçue que l'heure compte autant que la quantité.</li>
+        <li><b>Monter le phénomène de l'aube</b> à 1,6 : la glycémie remonte avant le réveil, sans aucun repas. Un mécanisme que le patient ne peut pas deviner seul.</li>
+        <li><b>Conclure sur les limites</b> : modèle physiologique simplifié, non validé cliniquement. Les vrais défis restent la validation sur données réelles, l'équité entre sous-groupes et la fidélité des explications.</li>
+      </ol>
+    </details>
   </div>
 </div>
 
+<div class="foot">
+  <b>Avertissement.</b> Prototype pédagogique. Les glycémies sont produites par un modèle physiologique simplifié à des fins de démonstration et <b>ne doivent pas</b> servir à une décision médicale. Aucune dose ni traitement n'est recommandé.<br>
+  HbA1c estimée via ADAG. Valeurs MET cohérentes avec le 2024 Adult Compendium ; oxydation des substrats par les équations de Frayn (1983).<br>
+  Projet <i>Personalized Diabetes Monitoring Twin</i> — AI for Health (PGE5, Prof. A. Kar) · Regis Likassi · Hakim Djomo · Jean Direl Nze · Xavier Ondo · Seth Ndinga
+</div>
+</div>
+
 <script>
-(function(){
-  "use strict";
-  var S = {
-    age:54, sex:"H", bmi:29, dur:6, sens:45, metf:true,
-    wake:7, bed:23.5, tB:7.75, tL:12.75, tD:21.0,
-    exStart:8, exDur:20, met:4.8,
-    carb:65, gi:1.0, str:40
-  };
-  var reference=null;
-  var N=289;
+const ACTS = [{"c":"SLP01","n":"Sommeil","g":"Repos","m":0.95},{"c":"SED01","n":"Assis au repos / lecture","g":"Repos","m":1.3},{"c":"SED02","n":"Regarder la television","g":"Repos","m":1.3},{"c":"SED03","n":"Travail de bureau assis / ordinateur","g":"Travail","m":1.5},{"c":"SED04","n":"Reunion assise","g":"Travail","m":1.5},{"c":"SED05","n":"Debout immobile","g":"Repos","m":1.8},{"c":"SED06","n":"Conduire une voiture","g":"Deplacement","m":2.0},{"c":"SED07","n":"Transport en commun assis","g":"Deplacement","m":1.3},{"c":"SED08","n":"Repas a table","g":"Repos","m":1.5},{"c":"MAR01","n":"Marche tres lente (3 km/h)","g":"Marche","m":2.0},{"c":"MAR02","n":"Marche lente (4 km/h)","g":"Marche","m":2.8},{"c":"MAR03","n":"Marche moderee (4.8 km/h)","g":"Marche","m":3.5},{"c":"MAR04","n":"Marche rapide (5.6 km/h)","g":"Marche","m":4.3},{"c":"MAR05","n":"Marche tres rapide (6.4 km/h)","g":"Marche","m":5.0},{"c":"MAR06","n":"Marche en cote / randonnee","g":"Marche","m":6.0},{"c":"MAR07","n":"Monter des escaliers","g":"Marche","m":8.0},{"c":"MAR08","n":"Descendre des escaliers","g":"Marche","m":3.5},{"c":"MAR09","n":"Marche avec le chien","g":"Marche","m":3.0},{"c":"MAR10","n":"Marche avec poussette","g":"Marche","m":2.5},{"c":"CRS01","n":"Jogging leger","g":"Course","m":7.0},{"c":"CRS02","n":"Course 8 km/h","g":"Course","m":8.3},{"c":"CRS03","n":"Course 9.7 km/h","g":"Course","m":9.8},{"c":"CRS04","n":"Course 11.3 km/h","g":"Course","m":11.0},{"c":"CRS05","n":"Fractionne / sprint","g":"Course","m":13.0},{"c":"VEL01","n":"Velo loisir (<16 km/h)","g":"Velo","m":4.0},{"c":"VEL02","n":"Velo moderé (16-19 km/h)","g":"Velo","m":6.8},{"c":"VEL03","n":"Velo soutenu (19-22 km/h)","g":"Velo","m":8.0},{"c":"VEL04","n":"Velo rapide (22-25 km/h)","g":"Velo","m":10.0},{"c":"VEL05","n":"Velo d'appartement moderé","g":"Velo","m":7.0},{"c":"VEL06","n":"Trajet domicile-travail a velo","g":"Deplacement","m":6.8},{"c":"NAT01","n":"Natation loisir","g":"Sport","m":6.0},{"c":"NAT02","n":"Natation longueurs moderee","g":"Sport","m":8.3},{"c":"NAT03","n":"Aquagym","g":"Sport","m":5.5},{"c":"SPT01","n":"Football","g":"Sport","m":7.0},{"c":"SPT02","n":"Basketball","g":"Sport","m":6.5},{"c":"SPT03","n":"Tennis","g":"Sport","m":7.3},{"c":"SPT04","n":"Badminton","g":"Sport","m":5.5},{"c":"SPT05","n":"Volleyball","g":"Sport","m":4.0},{"c":"SPT06","n":"Danse moderee","g":"Sport","m":5.0},{"c":"SPT07","n":"Danse soutenue","g":"Sport","m":7.8},{"c":"SPT08","n":"Arts martiaux","g":"Sport","m":10.3},{"c":"SPT09","n":"Golf (avec marche)","g":"Sport","m":4.8},{"c":"SPT10","n":"Ski de fond","g":"Sport","m":9.0},{"c":"FIT01","n":"Yoga doux","g":"Fitness","m":2.5},{"c":"FIT02","n":"Yoga dynamique","g":"Fitness","m":4.0},{"c":"FIT03","n":"Etirements / mobilite","g":"Fitness","m":2.3},{"c":"FIT04","n":"Musculation legere","g":"Fitness","m":3.5},{"c":"FIT05","n":"Musculation soutenue","g":"Fitness","m":6.0},{"c":"FIT06","n":"Gymnastique / abdominaux","g":"Fitness","m":3.8},{"c":"FIT07","n":"Circuit training","g":"Fitness","m":8.0},{"c":"FIT08","n":"Elliptique moderé","g":"Fitness","m":5.0},{"c":"FIT09","n":"Rameur moderé","g":"Fitness","m":7.0},{"c":"FIT10","n":"Pilates","g":"Fitness","m":3.0},{"c":"DOM01","n":"Cuisiner","g":"Domestique","m":2.5},{"c":"DOM02","n":"Vaisselle debout","g":"Domestique","m":2.5},{"c":"DOM03","n":"Menage general","g":"Domestique","m":3.3},{"c":"DOM04","n":"Passer l'aspirateur","g":"Domestique","m":3.3},{"c":"DOM05","n":"Repassage","g":"Domestique","m":1.8},{"c":"DOM06","n":"Faire les courses","g":"Domestique","m":2.3},{"c":"DOM07","n":"Porter des courses","g":"Domestique","m":4.0},{"c":"DOM08","n":"Laver les vitres","g":"Domestique","m":3.2},{"c":"DOM09","n":"S'occuper des enfants (actif)","g":"Domestique","m":3.5},{"c":"JAR01","n":"Jardinage general","g":"Jardinage","m":3.8},{"c":"JAR02","n":"Tondre la pelouse","g":"Jardinage","m":5.0},{"c":"JAR03","n":"Becher / retourner la terre","g":"Jardinage","m":5.0},{"c":"JAR04","n":"Ratisser les feuilles","g":"Jardinage","m":3.8},{"c":"JAR05","n":"Deneiger a la pelle","g":"Jardinage","m":6.0},{"c":"JAR06","n":"Bricolage general","g":"Jardinage","m":3.0},{"c":"TRV01","n":"Travail debout leger (vente)","g":"Travail","m":3.0},{"c":"TRV02","n":"Travail manuel moderé","g":"Travail","m":4.5},{"c":"TRV03","n":"Manutention / port de charges","g":"Travail","m":6.5},{"c":"TRV04","n":"Travail de construction","g":"Travail","m":5.5},{"c":"TRV05","n":"Soins infirmiers / aide-soignant","g":"Travail","m":3.5},{"c":"LOI01","n":"Jouer d'un instrument assis","g":"Loisir","m":2.0},{"c":"LOI02","n":"Jeux video actifs","g":"Loisir","m":3.0},{"c":"LOI03","n":"Peche","g":"Loisir","m":3.5},{"c":"LOI04","n":"Bowling","g":"Loisir","m":3.8},{"c":"LOI05","n":"Petanque","g":"Loisir","m":3.0}];
+</script>
+<script>
+"use strict";
+/* ====================== COUCHE 1 — physiologie (port fidèle du Python) ====================== */
+const VO2_PER_MET=3.5, KCAL_CHO=4, KCAL_FAT=9;
+const HEP_BASAL=2.0, DAWN_HEP=0.08, DAWN_DISP=0.04, DAWN_ISI=0.15, DAWN_SIG=1.4;
+const EX_UPTAKE=0.60, GLU_SPACE=2.0;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const byCode=Object.fromEntries(ACTS.map(a=>[a.c,a]));
 
-  // ---- helpers ----
-  function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
-  function hhmm(v){ var vv=((v%24)+24)%24; var h=Math.floor(vv); var m=Math.round((vv-h)*60); if(m===60){h=(h+1)%24;m=0;} return (h<10?'0'+h:h)+'h'+(m<10?'0'+m:m); }
-  function fr(x){ return String(x).replace(".",","); }
-  function sleepHours(p){ return clamp(p.wake+24-p.bed,3,11); }
-  function weightKg(p){ return p.bmi*2.96; } // height ~1.72 m assumption
-  function kcal(p){ return p.met*3.5*weightKg(p)/200*p.exDur; }
+const vo2FromMet=(met,w)=>met*VO2_PER_MET*w/1000;
+function rerFromMet(met,fit=1){let r=0.78+0.20*(1-Math.exp(-met/6));r-=0.03*(fit-1);return clamp(r,0.71,1.0);}
+function frayn(vo2,vco2){return [Math.max(0,4.55*vco2-3.21*vo2), Math.max(0,1.67*(vo2-vco2))];}
+function carbAbsorption(m,min){
+  if(min<=0) return [0,0];
+  let tp=45/Math.max(0.6,m.gi); tp*=1+Math.min(0.35,(m.fiber||0)*0.02);
+  const x=min/tp;
+  return [m.carbs*(1+x)*Math.exp(-x), m.carbs*min/(tp*tp)*Math.exp(-x)];
+}
+const circadian=h=>clamp(0.80+0.033*(h-7),0.75,1.30);
+function dawnFactor(h,wake,inten){
+  const peak=wake-1, d=((h-peak+12)%24)-12;
+  return inten*Math.exp(-(d*d)/(2*DAWN_SIG*DAWN_SIG));
+}
+function hepatic(w,cob,met,dawn){
+  return HEP_BASAL*w*(1-Math.min(0.65,cob/60*0.65))*(1+Math.min(1.2,Math.max(0,met-2)*0.18))*(1+DAWN_HEP*dawn);
+}
+function exerciseUptake(w,met,elapsed){
+  return w*EX_UPTAKE*Math.max(0,met-1.3)*(1+0.30*Math.min(1,Math.max(0,elapsed)/90));
+}
+function insulinSens(S,h,glyDef,dawn){
+  const sleep=24-(((S.bed-S.wake)%24)+24)%24;
+  let isi=1/circadian(h);
+  isi*=1-0.045*Math.max(0,7-sleep);
+  isi*=1-0.18*(S.stress/100);
+  isi*=1+Math.min(0.30,glyDef/120*0.30);
+  isi*=1-DAWN_ISI*dawn;
+  isi*=(0.75+S.insSens/100*0.55);
+  if(S.metf) isi*=1.15;
+  return clamp(isi,0.35,2.2);
+}
+function awakeHours(S){return (((S.bed-S.wake)%24)+24)%24;}
+function isAsleep(S,h){return ((((h-S.wake)%24)+24)%24)>=awakeHours(S);}
 
-  // ---- circadian insulin-sensitivity modulation ----
-  // Insulin sensitivity declines across the waking day: excursion multiplier
-  // small in the morning (~0.82), large in the evening (~1.26). Monotone matin<midi<soir.
-  function circ(h){ return clamp(0.80 + 0.033*(h-7), 0.75, 1.30); }
-
-  // ---- glucose engine ----
-  function metabolicBurden(p){
-    var M=1.0;
-    M *= 1 + Math.max(0,p.bmi-24)*0.026;
-    M *= 1 + p.dur*0.020;
-    M *= (1.35 - p.sens/100*0.72);
-    M *= (1 + p.str/100*0.22);
-    M *= (1 + Math.max(0,7-sleepHours(p))*0.045);
-    M *= (1 - Math.min(0.20, kcal(p)/400*0.20));   // overall activity benefit
-    if(p.metf) M*=0.83;
-    if(p.sex==="H") M*=1.02;
-    return clamp(M,0.55,2.6);
-  }
-  function fasting(M){ return clamp(88+(M-1)*62,85,195); }
-  function gammaExc(min,tp,s){ if(min<=0)return 0; var x=min/tp; return Math.pow(x*Math.exp(1-x),s); }
-  function meals(p){ return [{t:p.tB,w:0.85},{t:p.tL,w:1.15},{t:p.tD,w:1.0}]; }
-  function exOverlapsMeal(p,tm){ return p.exDur>0 && p.exStart>=tm+0.25 && p.exStart<=tm+2.0; }
-  function exDip(h,p){
-    if(p.exDur<=0) return 0;
-    var mag=Math.min(32, kcal(p)*0.06);
-    return mag*gammaExc((h-p.exStart)*60,75,1.5);
-  }
-  function glucoseAt(h,p,M){
-    var G0=fasting(M);
-    var dawn=12*M*Math.exp(-Math.pow(h-(p.wake-0.5),2)/(2*1.2*1.2));
-    var g=G0+dawn;
-    var ms=meals(p);
-    for(var i=0;i<ms.length;i++){
-      var tm=ms[i].t, carbs=p.carb*ms[i].w, kcm=circ(tm);
-      var A=carbs*p.gi*M*0.92*kcm;
-      if(exOverlapsMeal(p,tm)) A*=(1-Math.min(0.32, kcal(p)/500*0.32));
-      var tp=(75-(p.gi-0.78)/(1.28-0.78)*20)*(1+0.18*(kcm-1)/0.26);
-      g+=A*gammaExc((h-tm)*60,tp,1.7);
+function computeConcepts(S){
+  const N=289, step=5, out=[]; let glyDef=0;
+  for(let i=0;i<N;i++){
+    const minute=i*step, h=minute/60;
+    let met=0, elapsed=0;
+    for(const a of S.acts){
+      const s=a.start*60;
+      if(minute>=s && minute<s+a.dur){
+        const m=Math.max(0.9,(byCode[a.code]?byCode[a.code].m:1)*a.scale);
+        if(m>met){met=m; elapsed=minute-s;}
+      }
     }
-    g-=exDip(h,p);
-    g+=1.6*Math.sin(h*2.7+1.3)+1.1*Math.sin(h*6.1);
-    return Math.max(55,g);
-  }
-  function series(p){
-    var M=metabolicBurden(p), a=new Array(N);
-    for(var i=0;i<N;i++){ var h=i/(N-1)*24; a[i]={t:h,g:glucoseAt(h,p,M)}; }
-    return a;
-  }
-  function metrics(a){
-    var sum=0,peak=0,inr=0;
-    for(var i=0;i<a.length;i++){ var g=a[i].g; sum+=g; if(g>peak)peak=g; if(g>=70&&g<=180)inr++; }
-    var mean=sum/a.length;
-    return {mean:mean,peak:peak,tir:inr/a.length*100,a1c:(mean+46.7)/28.7};
-  }
+    const asleep=isAsleep(S,h);
+    if(met===0) met=asleep?0.95:1.3;
+    const metRest=asleep?0.95:1.3;
 
-  // ---- interpretability ----
-  var REF={carb:45,gi:1.0,str:0,bmi:24,exDur:45,met:4.8,metf:true,tB:8,tL:13,tD:19};
-  var FACTORS=[
-    {key:"carb",name:"Glucides"},
-    {key:"gi",name:"Index glycémique"},
-    {key:"schedule",name:"Horaires des repas"},
-    {key:"str",name:"Stress"},
-    {key:"bmi",name:"Corpulence (IMC)"},
-    {key:"activite",name:"Activité physique"},
-    {key:"metf",name:"Metformine"}
+    const vo2=vo2FromMet(met,S.w), rer=rerFromMet(met);
+    const [cho,fat]=frayn(vo2,rer*vo2);
+    const vo2r=vo2FromMet(metRest,S.w), rerR=rerFromMet(metRest);
+    const [choR]=frayn(vo2r,rerR*vo2r);
+
+    const dawn=dawnFactor(h,S.wake,S.dawn);
+    const basal=HEP_BASAL*S.w*(1-DAWN_DISP*dawn);
+    const exUp=exerciseUptake(S.w,met,elapsed);
+    const uptake=basal+exUp;
+    const extra=Math.max(0,cho-choR);
+    glyDef+=Math.max(0,extra-exUp/1000)*step;
+
+    let cob=0,ra=0;
+    for(const m of S.meals){const [c,r]=carbAbsorption(m,minute-m.time*60); cob+=c; ra+=r;}
+
+    const hep=hepatic(S.w,cob,met,dawn);
+    const isi=insulinSens(S,h,glyDef,dawn);
+    out.push({t:h,asleep:asleep?1:0,met,energy:cho*KCAL_CHO+fat*KCAL_FAT,cho,uptake,
+      glyDef,cob,ra,circ:circadian(h),isi,hep,dawn,
+      flux:ra*1000+hep-uptake});
+  }
+  return out;
+}
+
+/* ====================== COUCHE 2 — glycémie ====================== */
+function simulate(F,S){
+  const vol=GLU_SPACE*S.w, n=F.length, g=new Array(n);
+  const base=92+S.dur*1.9+(60-S.insSens)*0.62;
+  const clear=0.016+(S.insSens/100)*0.042;
+  g[0]=base;
+  for(let i=0;i<n-1;i++){
+    const exc=g[i]-base;
+    const sens=1.55-S.insSens/100*0.62;
+    // La sensibilite a l'insuline de l'instant (circadien x sommeil x stress x
+    // effort recent x aube) module la vitesse d'elimination : un meme repas
+    // s'evacue plus vite le matin que le soir. C'est l'effet chrononutrition.
+    const clearNow=clear*F[i].isi;
+    const dg=(F[i].flux*sens/vol)*5 - clearNow*exc*(1+0.004*Math.max(0,exc))*5;
+    g[i+1]=clamp(g[i]+dg,45,400);
+  }
+  for(let i=0;i<n;i++) g[i]=clamp(g[i]+1.4*Math.sin(F[i].t*2.7+1.3),45,400);
+  return g;
+}
+function metrics(g){
+  let s=0,pk=0,inr=0;
+  for(const v of g){s+=v; if(v>pk)pk=v; if(v>=70&&v<=180)inr++;}
+  const mean=s/g.length;
+  return {mean,peak:pk,tir:inr/g.length*100,a1c:(mean+46.7)/28.7};
+}
+
+/* ====================== ÉTAT ====================== */
+let S={w:82,insSens:38,dur:6,dawn:1.0,stress:40,metf:true,wake:7,bed:23,
+  meals:[{time:7.75,carbs:45,fiber:6,gi:1.0},{time:12.75,carbs:60,fiber:8,gi:1.0},{time:21.25,carbs:90,fiber:4,gi:1.28}],
+  acts:[{code:"MAR04",start:8.5,dur:25,scale:1},{code:"SED03",start:9.5,dur:180,scale:1}]};
+const DEF=JSON.parse(JSON.stringify(S));
+let ref=null, F=[], G=[], hoverIdx=144;
+
+/* ====================== RENDU — graphique ====================== */
+const VW=940,VH=330,ML=48,MR=14,MT=14,MB=30,PW=VW-ML-MR,PH=VH-MT-MB,GMIN=40,GMAX=300;
+const xT=t=>ML+t/24*PW, yG=v=>MT+(1-(v-GMIN)/(GMAX-GMIN))*PH;
+function path(g,F){let d="";for(let i=0;i<g.length;i++){d+=(i?"L":"M")+xT(F[i].t).toFixed(1)+" "+yG(g[i]).toFixed(1)+" ";}return d.trim();}
+
+function drawChart(){
+  const el=document.getElementById("chart"), p=[];
+  p.push('<defs><linearGradient id="gf" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--s1)" stop-opacity="0.20"/><stop offset="100%" stop-color="var(--s1)" stop-opacity="0.01"/></linearGradient></defs>');
+  p.push(`<rect x="${ML}" y="${MT}" width="${(xT(S.wake)-ML).toFixed(1)}" height="${PH}" fill="var(--sleep)"/>`);
+  const bd=S.bed%24;
+  if(bd>S.wake) p.push(`<rect x="${xT(bd).toFixed(1)}" y="${MT}" width="${(xT(24)-xT(bd)).toFixed(1)}" height="${PH}" fill="var(--sleep)"/>`);
+  for(const a of S.acts){
+    const m=byCode[a.code]; if(!m||m.m<2) continue;
+    const x1=xT(a.start), x2=xT(Math.min(24,a.start+a.dur/60));
+    p.push(`<rect x="${x1.toFixed(1)}" y="${MT}" width="${Math.max(1,x2-x1).toFixed(1)}" height="${PH}" fill="var(--exb)"/>`);
+  }
+  p.push(`<rect x="${ML}" y="${yG(180).toFixed(1)}" width="${PW}" height="${(yG(70)-yG(180)).toFixed(1)}" fill="var(--band)"/>`);
+  for(const v of [70,100,140,180,220,260]){
+    const y=yG(v);
+    p.push(`<line class="${v===70||v===180?'th':'gl'}" x1="${ML}" y1="${y.toFixed(1)}" x2="${ML+PW}" y2="${y.toFixed(1)}"/>`);
+    p.push(`<text class="tk" x="${ML-7}" y="${(y+3.5).toFixed(1)}" text-anchor="end">${v}</text>`);
+  }
+  for(let h=0;h<=24;h+=3){
+    const x=xT(h);
+    p.push(`<line class="gl" x1="${x.toFixed(1)}" y1="${MT}" x2="${x.toFixed(1)}" y2="${MT+PH}"/>`);
+    p.push(`<text class="tk" x="${x.toFixed(1)}" y="${MT+PH+17}" text-anchor="middle">${String(h).padStart(2,"0")}h</text>`);
+  }
+  p.push(`<line class="ax" x1="${ML}" y1="${MT+PH}" x2="${ML+PW}" y2="${MT+PH}"/>`);
+  if(ref) p.push(`<path class="rf" d="${path(ref.g,ref.F)}"/>`);
+  let ar=`M${xT(0).toFixed(1)} ${yG(GMIN).toFixed(1)} `;
+  for(let i=0;i<G.length;i++) ar+=`L${xT(F[i].t).toFixed(1)} ${yG(G[i]).toFixed(1)} `;
+  ar+=`L${xT(24).toFixed(1)} ${yG(GMIN).toFixed(1)} Z`;
+  p.push(`<path class="ar" d="${ar}"/>`);
+  p.push(`<path class="ln" d="${path(G,F)}"/>`);
+  for(const m of S.meals){
+    const x=xT(m.time);
+    p.push(`<path d="M${(x-4).toFixed(1)} ${MT+PH+4} L${(x+4).toFixed(1)} ${MT+PH+4} L${x.toFixed(1)} ${MT+PH-2} Z" fill="var(--muted)"/>`);
+  }
+  p.push(`<line id="cx" x1="0" y1="${MT}" x2="0" y2="${MT+PH}" stroke="var(--s1)" stroke-width="1" stroke-dasharray="3 3" style="opacity:0"/>`);
+  p.push(`<circle id="cd" r="4.5" fill="var(--s1)" stroke="var(--surf)" stroke-width="2" style="opacity:0"/>`);
+  p.push(`<rect id="hit" x="${ML}" y="${MT}" width="${PW}" height="${PH}" fill="transparent" style="cursor:crosshair"/>`);
+  el.innerHTML=p.join("");
+  document.getElementById("legend").innerHTML =
+    `<span style="color:var(--s1)">━</span> scénario actuel ${ref?'&nbsp; <span style="color:var(--s2)">╌</span> référence':''} &nbsp; <span style="color:var(--good)">▬</span> cible 70–180`;
+  bindHover(el);
+}
+function bindHover(svg){
+  const hit=document.getElementById("hit"),cx=document.getElementById("cx"),cd=document.getElementById("cd"),tt=document.getElementById("tt");
+  function mv(ev){
+    const r=svg.getBoundingClientRect(), sc=VW/r.width;
+    const t=clamp(((ev.clientX-r.left)*sc-ML)/PW*24,0,24);
+    const i=clamp(Math.round(t/24*288),0,288);
+    hoverIdx=i; renderConcepts();
+    const px=xT(F[i].t), py=yG(G[i]);
+    cx.setAttribute("x1",px);cx.setAttribute("x2",px);cx.style.opacity=1;
+    cd.setAttribute("cx",px);cd.setAttribute("cy",py);cd.style.opacity=1;
+    const hh=Math.floor(F[i].t), mm=Math.round((F[i].t%1)*60);
+    let extra="";
+    if(ref) extra=`<div class="t" style="margin-top:3px">Référence : <b style="color:var(--s2)">${Math.round(ref.g[i])}</b> mg/dL</div>`;
+    tt.innerHTML=`<div class="t">${String(hh).padStart(2,"0")}h${String(mm).padStart(2,"0")}</div><div class="v" style="color:var(--s1)">${Math.round(G[i])} mg/dL</div>${extra}`;
+    tt.style.opacity=1;
+    let L=px/sc+12; if(L>r.width-140) L=px/sc-130;
+    tt.style.left=L+"px"; tt.style.top=(py/sc-8)+"px";
+  }
+  hit.addEventListener("mousemove",mv);
+  hit.addEventListener("mouseleave",()=>{cx.style.opacity=0;cd.style.opacity=0;tt.style.opacity=0;});
+  hit.addEventListener("touchmove",e=>{if(e.touches[0]){mv(e.touches[0]);e.preventDefault();}},{passive:false});
+}
+
+/* ====================== RENDU — concepts ====================== */
+function renderConcepts(){
+  const f=F[hoverIdx]; if(!f) return;
+  const hh=Math.floor(f.t), mm=Math.round((f.t%1)*60);
+  document.getElementById("cpTime").textContent=`${String(hh).padStart(2,"0")}h${String(mm).padStart(2,"0")}`;
+  const items=[
+    ["Intensité",f.met.toFixed(1),"MET",f.met/12,"var(--s4)"],
+    ["Glucides absorbés",(f.ra*1000).toFixed(0),"mg/min",Math.min(1,f.ra*1000/700),"var(--s2)"],
+    ["En digestion",f.cob.toFixed(0),"g",Math.min(1,f.cob/90),"var(--s2)"],
+    ["Captation glucose",f.uptake.toFixed(0),"mg/min",Math.min(1,f.uptake/900),"var(--s3)"],
+    ["Production hépatique",f.hep.toFixed(0),"mg/min",Math.min(1,f.hep/400),"var(--s4)"],
+    ["Flux net",(f.flux>0?"+":"")+f.flux.toFixed(0),"mg/min",Math.min(1,Math.abs(f.flux)/600),f.flux>0?"var(--s2)":"var(--s3)"],
+    ["Sensibilité insuline",f.isi.toFixed(2),"×",Math.min(1,f.isi/2),"var(--s1)"],
+    ["Phénomène de l'aube",(f.dawn*100).toFixed(0),"%",Math.min(1,f.dawn),"var(--warn)"]
   ];
-  function attribution(p){
-    var base=metrics(series(p)).mean, out=[];
-    for(var i=0;i<FACTORS.length;i++){
-      var f=FACTORS[i], q=Object.assign({},p);
-      if(f.key==="schedule"){ q.tB=REF.tB;q.tL=REF.tL;q.tD=REF.tD; }
-      else if(f.key==="activite"){ q.exDur=REF.exDur;q.met=REF.met; }
-      else q[f.key]=REF[f.key];
-      out.push({name:f.name, delta: base-metrics(series(q)).mean});
-    }
-    out.sort(function(a,b){return Math.abs(b.delta)-Math.abs(a.delta);});
-    return out;
+  document.getElementById("cps").innerHTML=items.map(([k,v,u,r,c])=>
+    `<div class="cp"><div class="k">${k}</div><div class="v">${v}<span class="u">${u}</span></div>
+     <div class="bar"><i style="width:${(r*100).toFixed(0)}%;background:${c}"></i></div></div>`).join("");
+}
+
+/* ====================== RENDU — états de risque ====================== */
+function renderStates(){
+  const m=metrics(G);
+  let hypo=0,hyper=0,maxSlope=0,peakIdx=0;
+  for(let i=0;i<G.length;i++){
+    if(G[i]<70)hypo++; if(G[i]>180)hyper++;
+    if(G[i]>G[peakIdx])peakIdx=i;
+    if(i>0){const s=(G[i]-G[i-1])/5; if(Math.abs(s)>Math.abs(maxSlope))maxSlope=s;}
   }
+  const pHyper=hyper/G.length, pHypo=hypo/G.length;
+  const lvl=(p,a,b)=>p>b?["crit","Élevé"]:p>a?["serious","Modéré"]:["good","Faible"];
+  const [chy,lhy]=lvl(pHyper,0.02,0.15), [cho2,lho]=lvl(pHypo,0.005,0.03);
+  const st=[
+    [chy,`Risque d'hyperglycémie : <b>${lhy}</b> (${(pHyper*100).toFixed(0)} % du temps &gt;180)`],
+    [cho2,`Risque d'hypoglycémie : <b>${lho}</b> (${(pHypo*100).toFixed(1)} % du temps &lt;70)`],
+    [m.tir>70?"good":m.tir>50?"serious":"crit",`Temps dans la cible : <b>${m.tir.toFixed(0)} %</b>`],
+    [Math.abs(maxSlope)>2?"serious":"good",`Variation max : <b>${maxSlope>0?"+":""}${maxSlope.toFixed(1)}</b> mg/dL/min`]
+  ];
+  document.getElementById("states").innerHTML=st.map(([c,t])=>
+    `<div class="st"><span class="dot" style="background:var(--${c})"></span><span>${t}</span></div>`).join("");
 
-  // ---- chart geometry ----
-  var VBW=920,VBH=380,ML=52,MR=18,MT=18,MB=34,PW=VBW-ML-MR,PH=VBH-MT-MB,GMIN=40,GMAX=300;
-  function xT(t){return ML+t/24*PW;}
-  function yG(g){return MT+(1-(g-GMIN)/(GMAX-GMIN))*PH;}
-  function path(a){var d="";for(var i=0;i<a.length;i++){d+=(i?"L":"M")+xT(a[i].t).toFixed(1)+" "+yG(a[i].g).toFixed(1)+" ";}return d.trim();}
-  function areaPath(a){var d="M"+xT(a[0].t).toFixed(1)+" "+yG(GMIN).toFixed(1)+" ";for(var i=0;i<a.length;i++){d+="L"+xT(a[i].t).toFixed(1)+" "+yG(a[i].g).toFixed(1)+" ";}d+="L"+xT(a[a.length-1].t).toFixed(1)+" "+yG(GMIN).toFixed(1)+" Z";return d;}
+  // explication traçable — préfigure la couche 4
+  const pf=F[peakIdx], ph=Math.floor(pf.t), pm=Math.round((pf.t%1)*60);
+  const causes=[];
+  if(pf.cob>35) causes.push("un repas encore en digestion");
+  if(pf.circ>1.12) causes.push("une tolérance au glucose dégradée en soirée");
+  if(pf.isi<1.0) causes.push("une sensibilité à l'insuline basse");
+  if(pf.dawn>0.5) causes.push("la bouffée hormonale de fin de nuit");
+  if(pf.met<1.5) causes.push("l'absence d'activité à ce moment");
+  const advice = G[peakIdx]>180
+    ? (pf.t>18 ? "Avancer le dîner de deux à trois heures réduirait nettement ce pic." :
+       "Une marche de 30 min après ce repas atténuerait la montée.")
+    : "Le profil reste dans la cible sur l'essentiel de la journée.";
+  const ico = G[peakIdx]>180 ? "⚠️" : "✅";
+  document.getElementById("expl").innerHTML=
+    `<div class="h">${ico} Pic de ${Math.round(G[peakIdx])} mg/dL vers ${String(ph).padStart(2,"0")}h${String(pm).padStart(2,"0")}</div>
+     <div>${advice}</div>
+     <div class="why">Déclenché par : ${causes.length?causes.join(", "):"le profil de base du patient"}. Ceci n'est pas un avis médical.</div>`;
+}
 
-  var curSeries=[];
-  function drawChart(){
-    curSeries=series(S);
-    var svg=document.getElementById("chart"), yTicks=[70,100,140,180,220,260], p=[];
-    p.push('<defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--series-1)" stop-opacity="0.20"/><stop offset="100%" stop-color="var(--series-1)" stop-opacity="0.01"/></linearGradient></defs>');
-    // sleep bands (asleep 0..wake and bed..24)
-    p.push('<rect x="'+ML+'" y="'+MT+'" width="'+(xT(S.wake)-ML).toFixed(1)+'" height="'+PH+'" fill="var(--sleepband)"/>');
-    if(S.bed<24){ p.push('<rect x="'+xT(S.bed).toFixed(1)+'" y="'+MT+'" width="'+(xT(24)-xT(S.bed)).toFixed(1)+'" height="'+PH+'" fill="var(--sleepband)"/>'); }
-    // exercise band
-    if(S.exDur>0){ var ex1=xT(S.exStart), ex2=xT(Math.min(24,S.exStart+S.exDur/60)); p.push('<rect x="'+ex1.toFixed(1)+'" y="'+MT+'" width="'+(ex2-ex1).toFixed(1)+'" height="'+PH+'" fill="var(--exband)"/>'); p.push('<text class="band-lab" x="'+((ex1+ex2)/2).toFixed(1)+'" y="'+(MT+11)+'" text-anchor="middle">Activité</text>'); }
-    // target band
-    p.push('<rect x="'+ML+'" y="'+yG(180).toFixed(1)+'" width="'+PW+'" height="'+(yG(70)-yG(180)).toFixed(1)+'" fill="var(--band)"/>');
-    for(var i=0;i<yTicks.length;i++){ var y=yG(yTicks[i]); p.push('<line class="'+((yTicks[i]===70||yTicks[i]===180)?"thr-line":"grid-line")+'" x1="'+ML+'" y1="'+y.toFixed(1)+'" x2="'+(ML+PW)+'" y2="'+y.toFixed(1)+'"/>'); p.push('<text class="t-tick" x="'+(ML-8)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end">'+yTicks[i]+'</text>'); }
-    for(var h=0;h<=24;h+=3){ var x=xT(h); p.push('<line class="grid-line" x1="'+x.toFixed(1)+'" y1="'+MT+'" x2="'+x.toFixed(1)+'" y2="'+(MT+PH)+'"/>'); p.push('<text class="t-tick" x="'+x.toFixed(1)+'" y="'+(MT+PH+18)+'" text-anchor="middle">'+(h<10?"0"+h:h)+'h</text>'); }
-    p.push('<line class="axis-line" x1="'+ML+'" y1="'+(MT+PH)+'" x2="'+(ML+PW)+'" y2="'+(MT+PH)+'"/>');
-    if(reference){ p.push('<path class="ref-line" d="'+path(series(reference))+'"/>'); }
-    p.push('<path class="gluc-area" d="'+areaPath(curSeries)+'"/>');
-    p.push('<path class="gluc-line" d="'+path(curSeries)+'"/>');
-    var ms=meals(S);
-    for(var mi=0;mi<ms.length;mi++){ var mx=xT(ms[mi].t); p.push('<path d="M'+(mx-4).toFixed(1)+' '+(MT+PH+5)+' L'+(mx+4).toFixed(1)+' '+(MT+PH+5)+' L'+mx.toFixed(1)+' '+(MT+PH-1)+' Z" fill="var(--muted)"/>'); }
-    p.push('<line id="crossX" x1="0" y1="'+MT+'" x2="0" y2="'+(MT+PH)+'" stroke="var(--series-1)" stroke-width="1" stroke-dasharray="3 3" style="opacity:0"/>');
-    p.push('<circle id="crossDot" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2" style="opacity:0"/>');
-    p.push('<rect id="hitrect" x="'+ML+'" y="'+MT+'" width="'+PW+'" height="'+PH+'" fill="transparent" style="cursor:crosshair"/>');
-    svg.innerHTML=p.join("");
-    document.getElementById("lgRef").style.display=reference?"flex":"none";
-    attachHover(svg);
-  }
-  function attachHover(svg){
-    var rect=document.getElementById("hitrect"),cx=document.getElementById("crossX"),dot=document.getElementById("crossDot"),tt=document.getElementById("tt");
-    function move(ev){
-      var r=svg.getBoundingClientRect(),scale=VBW/r.width,vx=(ev.clientX-r.left)*scale;
-      var t=clamp((vx-ML)/PW*24,0,24),idx=clamp(Math.round(t/24*(N-1)),0,N-1),pt=curSeries[idx];
-      var px=xT(pt.t),py=yG(pt.g);
-      cx.setAttribute("x1",px);cx.setAttribute("x2",px);cx.style.opacity=1;
-      dot.setAttribute("cx",px);dot.setAttribute("cy",py);dot.style.opacity=1;
-      var refTxt="";
-      if(reference){ var rg=glucoseAt(pt.t,reference,metabolicBurden(reference)); refTxt='<div class="tt-t" style="margin-top:3px">Référence : <span style="color:var(--series-2);font-weight:650">'+Math.round(rg)+'</span> mg/dL</div>'; }
-      tt.innerHTML='<div class="tt-t">'+hhmm(pt.t)+'</div><div class="tt-v" style="color:var(--series-1)">'+Math.round(pt.g)+' mg/dL</div>'+refTxt;
-      tt.style.opacity=1;
-      var left=(px/scale)+12; if(left>r.width-140)left=(px/scale)-130;
-      tt.style.left=left+"px"; tt.style.top=((py/scale)-10)+"px";
-    }
-    function leave(){cx.style.opacity=0;dot.style.opacity=0;tt.style.opacity=0;}
-    rect.addEventListener("mousemove",move);rect.addEventListener("mouseleave",leave);
-    rect.addEventListener("touchmove",function(e){if(e.touches[0]){move(e.touches[0]);e.preventDefault();}},{passive:false});
-    rect.addEventListener("touchend",leave);
-  }
+/* ====================== COMPARATEUR D'INTERVENTIONS ====================== */
+const INTERVENTIONS=[
+  ["Réduire les glucides de 40 %", S=>S.meals.forEach(m=>m.carbs=Math.round(m.carbs*0.6))],
+  ["Passer tous les repas en IG bas", S=>S.meals.forEach(m=>m.gi=0.78)],
+  ["Avancer le dernier repas de 3 h", S=>{const l=S.meals.reduce((a,m)=>m.time>a.time?m:a,S.meals[0]); l.time=Math.max(11,l.time-3);}],
+  ["Marche de 30 min après chaque repas", S=>S.meals.forEach(m=>S.acts.push({code:"MAR04",start:Math.min(23.4,m.time+0.75),dur:30,scale:1}))],
+  ["45 min de vélo en fin de journée", S=>S.acts.push({code:"VEL03",start:18,dur:45,scale:1})],
+  ["Dormir une heure de plus", S=>{S.bed=Math.max(20,S.bed-1);}],
+];
+function peakOf(state){
+  const f=computeConcepts(state), g=simulate(f,state);
+  let pk=0,inr=0; for(const v of g){if(v>pk)pk=v; if(v>=70&&v<=180)inr++;}
+  return {peak:pk,tir:inr/g.length*100};
+}
+function renderCompare(){
+  const base=peakOf(S);
+  const rows=INTERVENTIONS.map(([name,fn])=>{
+    const c=JSON.parse(JSON.stringify(S)); fn(c);
+    const r=peakOf(c);
+    return {name,d:r.peak-base.peak,dt:r.tir-base.tir};
+  }).sort((a,b)=>a.d-b.d);
+  const mx=Math.max(1,...rows.map(r=>Math.abs(r.d)));
+  document.getElementById("cmp").innerHTML=rows.map(r=>{
+    const w=Math.abs(r.d)/mx*100, col=r.d<-1?"var(--s3)":r.d>1?"var(--s2)":"var(--muted)";
+    return `<div class="cmpr"><span class="nm">${r.name}</span>
+      <span class="tr"><i style="width:${w.toFixed(0)}%;background:${col}"></i></span>
+      <span class="vl" style="color:${col}">${r.d>0?"+":""}${r.d.toFixed(0)} mg/dL</span></div>`;
+  }).join("")+
+  `<div class="note" style="margin-top:8px">Effet sur le <b>pic glycémique</b> de la journée (actuellement ${base.peak.toFixed(0)} mg/dL). Vert = amélioration.</div>`;
+}
 
-  function drawInterp(){
-    var data=attribution(S),maxAbs=1;
-    for(var i=0;i<data.length;i++)maxAbs=Math.max(maxAbs,Math.abs(data[i].delta));
-    var rows=[];
-    for(var j=0;j<data.length;j++){
-      var d=data[j],pos=d.delta>=0,frac=Math.min(1,Math.abs(d.delta)/maxAbs),half=frac*48;
-      var col=pos?(Math.abs(d.delta)>maxAbs*0.55?"var(--critical)":"var(--serious)"):"var(--good)";
-      var bs=pos?('left:50%;width:'+half+'%;background:'+col):('right:50%;width:'+half+'%;background:'+col);
-      rows.push('<div class="interp-row"><span class="iname">'+d.name+'</span><span class="ibar-wrap"><span class="interp-center" style="left:50%"></span><span class="ibar" style="'+bs+'"></span></span><span class="ival" style="color:'+col+'">'+(pos?"+":"−")+Math.abs(d.delta).toFixed(1)+'</span></div>');
-    }
-    document.getElementById("interp").innerHTML=rows.join("");
-  }
-  function fmtDelta(el,cur,ref,unit,invert,digits){
-    digits=digits||0;
-    if(ref===null){el.innerHTML="&nbsp;";return;}
-    var d=cur-ref,good=invert?d>0:d<0,cls=Math.abs(d)<(digits?0.05:0.5)?"flat":(good?"down":"up"),arrow=d>0?"▲":(d<0?"▼":"■");
-    el.className="tdelta "+cls; el.textContent=arrow+" "+(d>=0?"+":"−")+Math.abs(d).toFixed(digits)+" "+unit+" vs réf.";
-  }
-  function render(){
-    drawChart();
-    var m=metrics(curSeries);
-    document.getElementById("mMean").textContent=Math.round(m.mean);
-    document.getElementById("mTir").textContent=Math.round(m.tir);
-    document.getElementById("mPeak").textContent=Math.round(m.peak);
-    document.getElementById("mA1c").textContent=m.a1c.toFixed(1);
-    document.getElementById("slpOut").textContent=fr(sleepHours(S).toFixed(1));
-    document.getElementById("kcalOut").textContent=Math.round(kcal(S));
-    var rM=reference?metrics(series(reference)):null;
-    fmtDelta(document.getElementById("dMean"),m.mean,rM?rM.mean:null,"mg/dL",false,0);
-    fmtDelta(document.getElementById("dTir"),m.tir,rM?rM.tir:null,"pts",true,0);
-    fmtDelta(document.getElementById("dPeak"),m.peak,rM?rM.peak:null,"mg/dL",false,0);
-    fmtDelta(document.getElementById("dA1c"),m.a1c,rM?rM.a1c:null,"%",false,1);
-    drawInterp();
-  }
+/* ====================== RENDU — tuiles ====================== */
+function delta(el,cur,rv,unit,inv,dg){
+  dg=dg||0;
+  if(rv===null){el.innerHTML="&nbsp;";return;}
+  const d=cur-rv, good=inv?d>0:d<0;
+  el.className="d "+(Math.abs(d)<(dg?0.05:0.5)?"fl":(good?"dn":"up"));
+  el.textContent=(d>0?"▲ +":d<0?"▼ −":"■ ")+Math.abs(d).toFixed(dg)+" "+unit;
+}
+function render(){
+  F=computeConcepts(S); G=simulate(F,S);
+  drawChart();
+  const m=metrics(G);
+  mMean.textContent=Math.round(m.mean); mTir.textContent=Math.round(m.tir);
+  mPeak.textContent=Math.round(m.peak); mA1c.textContent=m.a1c.toFixed(1);
+  const rm=ref?metrics(ref.g):null;
+  delta(dMean,m.mean,rm?rm.mean:null,"mg/dL",false,0);
+  delta(dTir,m.tir,rm?rm.tir:null,"pts",true,0);
+  delta(dPeak,m.peak,rm?rm.peak:null,"mg/dL",false,0);
+  delta(dA1c,m.a1c,rm?rm.a1c:null,"%",false,1);
+  renderConcepts(); renderStates(); renderCompare();
+}
 
-  // ---- controls ----
-  function bindRange(id,key,fmt){ var el=document.getElementById(id); el.addEventListener("input",function(){ S[key]=parseFloat(el.value); document.getElementById(id+"V").textContent=fmt(S[key]); render(); }); }
-  bindRange("age","age",function(v){return v+" ans";});
-  bindRange("bmi","bmi",function(v){return fr(v)+" kg/m²";});
-  bindRange("dur","dur",function(v){return v+(v>1?" ans":" an");});
-  bindRange("sens","sens",function(v){return v+" / 100";});
-  bindRange("carb","carb",function(v){return v+" g";});
-  bindRange("str","str",function(v){return v+" / 100";});
-  bindRange("wake","wake",function(v){return hhmm(v);});
-  bindRange("bed","bed",function(v){return hhmm(v);});
-  bindRange("tB","tB",function(v){return hhmm(v);});
-  bindRange("tL","tL",function(v){return hhmm(v);});
-  bindRange("tD","tD",function(v){return hhmm(v);});
-  bindRange("exStart","exStart",function(v){return hhmm(v);});
-  bindRange("exDur","exDur",function(v){return v+" min";});
+/* ====================== UI — listes ====================== */
+const fr=x=>String(x).replace(".",",");
+function renderMeals(){
+  document.getElementById("meals").innerHTML=S.meals.map((m,i)=>`
+    <div class="item">
+      <div class="hd"><b>Repas ${i+1}</b><button class="x" data-dm="${i}">✕</button></div>
+      <div class="mini">
+        <div><label>Heure</label><input type="number" data-m="${i}" data-k="time" min="0" max="23.75" step="0.25" value="${m.time}"></div>
+        <div><label>Glucides (g)</label><input type="number" data-m="${i}" data-k="carbs" min="0" max="200" step="5" value="${m.carbs}"></div>
+        <div><label>Fibres (g)</label><input type="number" data-m="${i}" data-k="fiber" min="0" max="30" step="1" value="${m.fiber}"></div>
+        <div><label>Index glycémique</label>
+          <select data-m="${i}" data-k="gi">
+            <option value="0.78"${m.gi==0.78?" selected":""}>Bas</option>
+            <option value="1"${m.gi==1?" selected":""}>Moyen</option>
+            <option value="1.28"${m.gi==1.28?" selected":""}>Haut</option>
+          </select></div>
+      </div>
+    </div>`).join("");
+}
+function renderActs(){
+  const groups=[...new Set(ACTS.map(a=>a.g))];
+  const opts=a=>groups.map(g=>`<optgroup label="${g}">`+
+    ACTS.filter(x=>x.g===g).map(x=>`<option value="${x.c}"${x.c===a.code?" selected":""}>${x.n} — ${x.m} MET</option>`).join("")+
+    `</optgroup>`).join("");
+  document.getElementById("acts").innerHTML=S.acts.map((a,i)=>`
+    <div class="item">
+      <div class="hd"><b>${byCode[a.code]?byCode[a.code].n:"?"}</b><button class="x" data-da="${i}">✕</button></div>
+      <select data-a="${i}" data-k="code" style="margin-bottom:6px">${opts(a)}</select>
+      <div class="mini">
+        <div><label>Début (h)</label><input type="number" data-a="${i}" data-k="start" min="0" max="23.5" step="0.25" value="${a.start}"></div>
+        <div><label>Durée (min)</label><input type="number" data-a="${i}" data-k="dur" min="0" max="240" step="5" value="${a.dur}"></div>
+      </div>
+    </div>`).join("");
+}
 
-  function bindSeg(id,key){ var seg=document.getElementById(id); seg.querySelectorAll("button").forEach(function(b){ b.addEventListener("click",function(){ seg.querySelectorAll("button").forEach(function(x){x.classList.remove("active");}); b.classList.add("active"); S[key]=isNaN(parseFloat(b.dataset.v))?b.dataset.v:parseFloat(b.dataset.v); render(); }); }); }
-  bindSeg("sexSeg","sex"); bindSeg("giSeg","gi"); bindSeg("metSeg","met");
-  document.getElementById("metf").addEventListener("change",function(e){S.metf=e.target.checked;render();});
+/* ====================== ÉVÉNEMENTS ====================== */
+function bindRange(id,key,fmt,scale){
+  const el=document.getElementById(id);
+  el.addEventListener("input",()=>{S[key]=parseFloat(el.value)*(scale||1);
+    document.getElementById(id+"V").textContent=fmt(parseFloat(el.value)); render();});
+}
+bindRange("w","w",v=>v+" kg");
+bindRange("is","insSens",v=>v+" / 100");
+bindRange("du","dur",v=>v+(v>1?" ans":" an"));
+bindRange("dw","dawn",v=>fr(v.toFixed(1)));
+bindRange("st","stress",v=>v+" / 100");
+document.getElementById("mf").addEventListener("change",e=>{S.metf=e.target.checked;render();});
+["wk","bd"].forEach((id,k)=>document.getElementById(id).addEventListener("input",e=>{
+  S[k?"bed":"wake"]=parseFloat(e.target.value)||(k?23:7); render();}));
 
-  document.getElementById("freezeBtn").addEventListener("click",function(){reference=Object.assign({},S);document.getElementById("clearBtn").style.display="flex";render();});
-  document.getElementById("clearBtn").addEventListener("click",function(){reference=null;document.getElementById("clearBtn").style.display="none";render();});
+document.addEventListener("input",e=>{
+  const t=e.target;
+  if(t.dataset.m!==undefined){const i=+t.dataset.m,k=t.dataset.k;S.meals[i][k]=parseFloat(t.value)||0;render();}
+  if(t.dataset.a!==undefined){const i=+t.dataset.a,k=t.dataset.k;
+    S.acts[i][k]=(k==="code")?t.value:(parseFloat(t.value)||0);
+    if(k==="code")renderActs(); render();}
+});
+document.addEventListener("click",e=>{
+  const t=e.target;
+  if(t.dataset.dm!==undefined){S.meals.splice(+t.dataset.dm,1);renderMeals();render();}
+  if(t.dataset.da!==undefined){S.acts.splice(+t.dataset.da,1);renderActs();render();}
+});
+document.getElementById("addMeal").onclick=()=>{S.meals.push({time:16,carbs:30,fiber:3,gi:1.0});renderMeals();render();};
+document.getElementById("addAct").onclick=()=>{S.acts.push({code:"MAR04",start:17,dur:30,scale:1});renderActs();render();};
 
-  function setSlider(id,key,val,fmt){document.getElementById(id).value=val;S[key]=val;document.getElementById(id+"V").textContent=fmt(val);}
-  document.querySelectorAll("[data-reco]").forEach(function(btn){
-    btn.addEventListener("click",function(){
-      var r=btn.dataset.reco;
-      if(r==="carb"){setSlider("carb","carb",Math.max(25,Math.round(S.carb*0.6)),function(v){return v+" g";});}
-      else if(r==="dinner"){setSlider("tD","tD",18.0,function(v){return hhmm(v);});}
-      else if(r==="walk"){setSlider("exStart","exStart",Math.min(22,S.tD+0.75),function(v){return hhmm(v);});setSlider("exDur","exDur",Math.max(30,S.exDur),function(v){return v+" min";});}
-      else if(r==="reset"){ S={age:54,sex:"H",bmi:29,dur:6,sens:45,metf:true,wake:7,bed:23.5,tB:7.75,tL:12.75,tD:21.0,exStart:8,exDur:20,met:4.8,carb:65,gi:1.0,str:40}; reference=null; document.getElementById("clearBtn").style.display="none"; syncUI(); }
-      render();
-    });
-  });
-
-  function syncUI(){
-    setSlider("age","age",S.age,function(v){return v+" ans";});
-    setSlider("bmi","bmi",S.bmi,function(v){return fr(v)+" kg/m²";});
-    setSlider("dur","dur",S.dur,function(v){return v+(v>1?" ans":" an");});
-    setSlider("sens","sens",S.sens,function(v){return v+" / 100";});
-    setSlider("carb","carb",S.carb,function(v){return v+" g";});
-    setSlider("str","str",S.str,function(v){return v+" / 100";});
-    setSlider("wake","wake",S.wake,hhmm);setSlider("bed","bed",S.bed,hhmm);
-    setSlider("tB","tB",S.tB,hhmm);setSlider("tL","tL",S.tL,hhmm);setSlider("tD","tD",S.tD,hhmm);
-    setSlider("exStart","exStart",S.exStart,hhmm);setSlider("exDur","exDur",S.exDur,function(v){return v+" min";});
-    document.querySelectorAll("#sexSeg button").forEach(function(b){b.classList.toggle("active",b.dataset.v===S.sex);});
-    document.querySelectorAll("#giSeg button").forEach(function(b){b.classList.toggle("active",parseFloat(b.dataset.v)===S.gi);});
-    document.querySelectorAll("#metSeg button").forEach(function(b){b.classList.toggle("active",parseFloat(b.dataset.v)===S.met);});
-    document.getElementById("metf").checked=S.metf;
-  }
-
-  document.getElementById("themeBtn").addEventListener("click",function(){var root=document.documentElement;root.setAttribute("data-theme",root.getAttribute("data-theme")==="dark"?"light":"dark");render();});
-
+document.getElementById("freeze").onclick=()=>{ref={F:F.slice(),g:G.slice()};document.getElementById("clear").style.display="";render();};
+document.getElementById("clear").onclick=()=>{ref=null;document.getElementById("clear").style.display="none";render();};
+document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
+  const p=b.dataset.p;
+  if(p==="dinner"){const last=S.meals.reduce((a,m)=>m.time>a.time?m:a,S.meals[0]); last.time=18; renderMeals();}
+  else if(p==="walk"){const last=S.meals.reduce((a,m)=>m.time>a.time?m:a,S.meals[0]);
+    S.acts.push({code:"MAR04",start:Math.min(23,last.time+0.75),dur:30,scale:1}); renderActs();}
+  else if(p==="carb"){S.meals.forEach(m=>m.carbs=Math.round(m.carbs*0.6)); renderMeals();}
+  else if(p==="reset"){S=JSON.parse(JSON.stringify(DEF));ref=null;
+    document.getElementById("clear").style.display="none"; syncUI(); renderMeals(); renderActs();}
   render();
-})();
+});
+function syncUI(){
+  const set=(id,val,fmt)=>{document.getElementById(id).value=val;const v=document.getElementById(id+"V");if(v)v.textContent=fmt(val);};
+  set("w",S.w,v=>v+" kg"); set("is",S.insSens,v=>v+" / 100");
+  set("du",S.dur,v=>v+(v>1?" ans":" an")); set("dw",S.dawn,v=>fr(v.toFixed(1)));
+  set("st",S.stress,v=>v+" / 100");
+  document.getElementById("mf").checked=S.metf;
+  document.getElementById("wk").value=S.wake; document.getElementById("bd").value=S.bed;
+}
+document.getElementById("themeBtn").onclick=()=>{
+  const r=document.documentElement;
+  r.setAttribute("data-theme",r.getAttribute("data-theme")==="dark"?"light":"dark"); render();};
+
+renderMeals(); renderActs(); render();
 </script>
 </body>
 </html>
