@@ -92,6 +92,23 @@ l'activité → **12,51** avec les modulateurs, soit **−34 %**.
 >
 > En particulier, la glycémie synthétique est engendrée à partir des concepts que le modèle reçoit : la tâche est **plus facile qu'en réalité**, surtout à court horizon. Sur les vraies données de CGMacros, un modèle comparable obtient 13,11 mg/dL contre 13,39 pour la persistance à 30 min — quasiment ex æquo. **Ce qui se transférera aux données réelles, c'est la pente, pas les valeurs.**
 
+### Démonstration
+
+L'atelier [`demo/atelier.html`](demo/atelier.html) est un **fichier autonome** :
+on compose la journée sur une timeline, et le jumeau réagit en direct.
+
+- timeline 00h00 → 23h59 : cliquer pour poser un repas ou une activité choisie
+  parmi les **78 du catalogue** (recherche, filtres, badge MET) ;
+- une carte patient dont le **personnage exécute le geste de l'activité en
+  cours** — 20 gestes avec leurs accessoires, cadence indexée sur les METs ;
+- des **arêtes pondérées**, à la manière d'un schéma de réseau, qui portent les
+  flux métaboliques vers les graphes ;
+- lecture de la journée à **×0,5 → ×8**, journée de référence figeable,
+  comparateur d'interventions.
+
+Voir [`demo/DEPLOIEMENT.md`](demo/DEPLOIEMENT.md) pour le mode d'emploi et la
+mise en ligne.
+
 ### Présentation
 
 Le support de soutenance (12 slides, anglais, avec le script complet en notes du
@@ -154,7 +171,7 @@ src/glucotwin/
 
 scripts/     expériences en ligne de commande
 notebooks/   entraînement (Kaggle)
-demo/        application web autonome — la démo de 15 minutes
+demo/        applications web autonomes — atelier.html = la démo
 docs/        revue de littérature, état de l'art, architecture, plans
 tests/       25 tests
 ```
