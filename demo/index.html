@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlucoTwin — Jumeau numérique du patient diabétique de type 2</title>
+<style>
+  :root{
+    color-scheme: light;
+    --page:#f9f9f7; --surface-1:#ffffff; --surface-2:#fcfcfb;
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
+    --series-1:#2a78d6; --series-2:#eb6834;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+    --good-text:#006300;
+    --band:rgba(12,163,12,0.08);
+    --sleepband:rgba(74,58,167,0.09);
+    --exband:rgba(235,104,52,0.12);
+    --shadow:0 1px 2px rgba(11,11,11,0.06),0 6px 20px rgba(11,11,11,0.05);
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --page:#0d0d0d; --surface-1:#1a1a19; --surface-2:#1f1f1e;
+    --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+    --series-1:#3987e5; --series-2:#d95926;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+    --good-text:#0ca30c;
+    --band:rgba(12,163,12,0.12);
+    --sleepband:rgba(144,133,233,0.13);
+    --exband:rgba(217,89,38,0.16);
+    --shadow:0 1px 2px rgba(0,0,0,0.4),0 6px 20px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--page); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.45; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1280px;margin:0 auto;padding:20px 22px 48px}
+  header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--series-1),#1c5cab);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:19px;flex:0 0 auto}
+  h1{font-size:19px;margin:0;font-weight:650;letter-spacing:-0.01em}
+  .sub{color:var(--ink-2);font-size:12.5px;margin-top:2px}
+  .badges{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+  .badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--surface-2);border:1px solid var(--border);color:var(--ink-2)}
+  .theme-btn{border:1px solid var(--border);background:var(--surface-1);color:var(--ink-2);border-radius:9px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit}
+  .theme-btn:hover{color:var(--ink)}
+  .grid-main{display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+  @media(max-width:940px){.grid-main{grid-template-columns:1fr}}
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin:0 0 12px;font-weight:600}
+  .card + .card{margin-top:16px}
+  .field{margin-bottom:13px}
+  .field:last-child{margin-bottom:0}
+  .field .lab{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+  .field .lab .name{font-size:13px;color:var(--ink)}
+  .field .lab .val{font-size:12.5px;color:var(--series-1);font-weight:650;font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:6px;background:var(--grid);outline:none;margin:6px 0 2px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--series-1);border:2px solid var(--surface-1);box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--series-1);border:2px solid var(--surface-1);cursor:pointer}
+  .schedGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+  .seg{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:3px}
+  .seg button{flex:1;border:none;background:transparent;color:var(--ink-2);padding:6px 4px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+  .seg button.active{background:var(--series-1);color:#fff;font-weight:600}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between}
+  .switch{position:relative;width:44px;height:24px;flex:0 0 auto}
+  .switch input{opacity:0;width:0;height:0}
+  .slider-sw{position:absolute;inset:0;background:var(--grid);border-radius:20px;transition:.15s;cursor:pointer}
+  .slider-sw:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
+  .switch input:checked + .slider-sw{background:var(--good)}
+  .switch input:checked + .slider-sw:before{transform:translateX(20px)}
+  .readout{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;margin-top:4px}
+  .readout b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+  @media(max-width:620px){.metrics{grid-template-columns:repeat(2,1fr)}}
+  .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;padding:13px 14px;box-shadow:var(--shadow)}
+  .tile .tlab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .tile .tval{font-size:25px;font-weight:680;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1.05}
+  .tile .tunit{font-size:12.5px;color:var(--ink-2);font-weight:500;margin-left:3px}
+  .tile .tdelta{font-size:11.5px;margin-top:3px;font-variant-numeric:tabular-nums}
+  .up{color:var(--critical)} .down{color:var(--good-text)} .flat{color:var(--muted)}
+  .chartcard{position:relative}
+  .chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+  .legend{display:flex;gap:13px;align-items:center;font-size:11.5px;color:var(--ink-2);flex-wrap:wrap}
+  .legend .lg{display:flex;align-items:center;gap:6px}
+  .legend .sw{width:14px;height:3px;border-radius:2px}
+  .legend .bx{width:12px;height:11px;border-radius:3px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .t-tick{fill:var(--muted);font-size:11px}
+  .grid-line{stroke:var(--grid);stroke-width:1}
+  .axis-line{stroke:var(--axis);stroke-width:1}
+  .thr-line{stroke:var(--axis);stroke-width:1;stroke-dasharray:3 3}
+  .gluc-line{fill:none;stroke:var(--series-1);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+  .ref-line{fill:none;stroke:var(--series-2);stroke-width:2;stroke-dasharray:5 4;stroke-linejoin:round;stroke-linecap:round}
+  .gluc-area{fill:url(#gfill);opacity:.9}
+  .band-lab{fill:var(--muted);font-size:10px}
+  .tooltip{position:absolute;pointer-events:none;background:var(--surface-1);border:1px solid var(--border);border-radius:9px;padding:7px 10px;font-size:12px;box-shadow:var(--shadow);opacity:0;transition:opacity .08s;z-index:5;min-width:118px}
+  .tooltip .tt-t{color:var(--muted);font-size:11px;margin-bottom:2px}
+  .tooltip .tt-v{font-weight:650;font-variant-numeric:tabular-nums}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .act{border:1px solid var(--border);background:var(--surface-2);color:var(--ink);border-radius:9px;padding:8px 12px;font-size:12.5px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+  .act:hover{border-color:var(--series-1);color:var(--series-1)}
+  .act.primary{background:var(--series-1);color:#fff;border-color:var(--series-1)}
+  .act.primary:hover{color:#fff;opacity:.92}
+  .interp-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12.5px}
+  .interp-row .iname{width:130px;flex:0 0 auto;color:var(--ink-2);text-align:right}
+  .interp-row .ibar-wrap{flex:1;position:relative;height:20px}
+  .interp-row .ibar{position:absolute;top:2px;height:16px;border-radius:4px}
+  .interp-row .ival{font-size:11.5px;font-variant-numeric:tabular-nums;width:52px;flex:0 0 auto}
+  .interp-center{position:absolute;top:0;bottom:0;width:1px;background:var(--axis)}
+  .note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5}
+  .foot{margin-top:24px;padding-top:16px;border-top:1px solid var(--border);font-size:11.5px;color:var(--muted);line-height:1.6}
+  .pill{display:inline-block;padding:1px 7px;border-radius:12px;font-size:11px;font-weight:600}
+  details.demo{margin-top:16px;background:var(--surface-1);border:1px solid var(--border);border-radius:13px;padding:6px 16px;box-shadow:var(--shadow)}
+  details.demo summary{cursor:pointer;padding:10px 0;font-weight:600;font-size:13px}
+  details.demo ol{margin:4px 0 12px;padding-left:20px;color:var(--ink-2)}
+  details.demo li{margin-bottom:5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">GT</div>
+      <div>
+        <h1>GlucoTwin</h1>
+        <div class="sub">Jumeau numérique du patient diabétique de type 2 — piloté par l'emploi du temps & le rythme circadien</div>
+        <div class="badges">
+          <span class="badge">Prototype de démonstration</span>
+          <span class="badge">Modèle physiologique + circadien</span>
+          <span class="badge">Projet AI for Health · PGE5</span>
+        </div>
+      </div>
+    </div>
+    <button class="theme-btn" id="themeBtn">◐ Thème</button>
+  </header>
+
+  <div class="grid-main">
+    <!-- LEFT : CONTROLS -->
+    <div>
+      <div class="card">
+        <h2>Patient virtuel</h2>
+        <div class="field">
+          <div class="lab"><span class="name">Âge</span><span class="val" id="ageV">54 ans</span></div>
+          <input type="range" id="age" min="30" max="80" value="54">
+        </div>
+        <div class="field">
+          <div class="lab"><span class="name">Sexe</span></div>
+          <div class="seg" id="sexSeg"><button data-v="F">Femme</button><button data-v="H" class="active">Homme</button></div>
+        </div>
+        <div class="field">
+          <div class="lab"><span class="name">IMC</span><span class="val" id="bmiV">29 kg/m²</span></div>
+          <input type="range" id="bmi" min="20" max="42" value="29" step="0.5">
+        </div>
+        <div class="field">
+          <div class="lab"><span class="name">Ancienneté du diabète</span><span class="val" id="durV">6 ans</span></div>
+          <input type="range" id="dur" min="0" max="25" value="6">
+        </div>
+        <div class="field">
+          <div class="lab"><span class="name">Sensibilité à l'insuline</span><span class="val" id="sensV">45 / 100</span></div>
+          <input type="range" id="sens" min="10" max="95" value="45">
+        </div>
+        <div class="field toggle-row">
+          <span class="name">Metformine</span>
+          <label class="switch"><input type="checkbox" id="metf" checked><span class="slider-sw"></span></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🗓️ Emploi du temps de la journée</h2>
+        <div class="schedGrid">
+          <div class="field" style="margin:0">
+            <div class="lab"><span class="name">Lever</span><span class="val" id="wakeV">07h00</span></div>
+            <input type="range" id="wake" min="4.5" max="10" value="7" step="0.25">
+          </div>
+          <div class="field" style="margin:0">
+            <div class="lab"><span class="name">Coucher</span><span class="val" id="bedV">23h30</span></div>
+            <input type="range" id="bed" min="20" max="28" value="23.5" step="0.25">
+          </div>
+          <div class="field" style="margin:0">
+            <div class="lab"><span class="name">Petit-déj.</span><span class="val" id="tBV">07h45</span></div>
+            <input type="range" id="tB" min="5" max="11" value="7.75" step="0.25">
+          </div>
+          <div class="field" style="margin:0">
+            <div class="lab"><span class="name">Déjeuner</span><span class="val" id="tLV">12h45</span></div>
+            <input type="range" id="tL" min="11" max="15.5" value="12.75" step="0.25">
+          </div>
+          <div class="field" style="margin:0">
+            <div class="lab"><span class="name">Dîner</span><span class="val" id="tDV">21h00</span></div>
+            <input type="range" id="tD" min="17" max="23" value="21.0" step="0.25">
+          </div>
+          <div class="field" style="margin:0">
+            <div class="lab"><span class="name">Activité — heure</span><span class="val" id="exStartV">08h00</span></div>
+            <input type="range" id="exStart" min="5" max="22" value="8" step="0.25">
+          </div>
+          <div class="field" style="margin:0">
+            <div class="lab"><span class="name">Activité — durée</span><span class="val" id="exDurV">20 min</span></div>
+            <input type="range" id="exDur" min="0" max="90" value="20" step="5">
+          </div>
+          <div class="field" style="margin:0">
+            <div class="lab"><span class="name">Intensité</span></div>
+            <div class="seg" id="metSeg"><button data-v="2.8">Léger</button><button data-v="4.8" class="active">Modéré</button><button data-v="7.5">Intense</button></div>
+          </div>
+        </div>
+        <div class="readout"><span>Sommeil (déduit)</span><span><b id="slpOut">7,5</b> h</span></div>
+        <div class="readout"><span>Dépense de l'activité</span><span>≈ <b id="kcalOut">150</b> kcal</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Mode de vie</h2>
+        <div class="field">
+          <div class="lab"><span class="name">Glucides par repas</span><span class="val" id="carbV">65 g</span></div>
+          <input type="range" id="carb" min="15" max="120" value="65">
+        </div>
+        <div class="field">
+          <div class="lab"><span class="name">Index glycémique</span></div>
+          <div class="seg" id="giSeg"><button data-v="0.78">Bas</button><button data-v="1.0" class="active">Moyen</button><button data-v="1.28">Haut</button></div>
+        </div>
+        <div class="field">
+          <div class="lab"><span class="name">Niveau de stress</span><span class="val" id="strV">40 / 100</span></div>
+          <input type="range" id="str" min="0" max="100" value="40" step="5">
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT : OUTPUT -->
+    <div>
+      <div class="metrics">
+        <div class="tile"><div class="tlab">Glycémie moyenne</div><div class="tval"><span id="mMean">—</span><span class="tunit">mg/dL</span></div><div class="tdelta" id="dMean">&nbsp;</div></div>
+        <div class="tile"><div class="tlab">Temps dans la cible</div><div class="tval"><span id="mTir">—</span><span class="tunit">%</span></div><div class="tdelta" id="dTir">&nbsp;</div></div>
+        <div class="tile"><div class="tlab">Pic glycémique</div><div class="tval"><span id="mPeak">—</span><span class="tunit">mg/dL</span></div><div class="tdelta" id="dPeak">&nbsp;</div></div>
+        <div class="tile"><div class="tlab">HbA1c estimée</div><div class="tval"><span id="mA1c">—</span><span class="tunit">%</span></div><div class="tdelta" id="dA1c">&nbsp;</div></div>
+      </div>
+
+      <div class="card chartcard">
+        <div class="chart-head">
+          <h2 style="margin:0">Glycémie prédite sur 24 h</h2>
+          <div class="legend" id="legend">
+            <span class="lg"><span class="sw" style="background:var(--series-1)"></span>Scénario actuel</span>
+            <span class="lg" id="lgRef" style="display:none"><span class="sw" style="background:var(--series-2)"></span>Référence figée</span>
+            <span class="lg"><span class="bx" style="background:var(--band)"></span>Cible 70–180</span>
+            <span class="lg"><span class="bx" style="background:var(--sleepband)"></span>Sommeil</span>
+            <span class="lg"><span class="bx" style="background:var(--exband)"></span>Activité</span>
+          </div>
+        </div>
+        <div id="chartHost" style="position:relative">
+          <svg id="chart" viewBox="0 0 920 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Courbe de glycémie prédite sur 24 heures"></svg>
+          <div class="tooltip" id="tt"></div>
+        </div>
+        <div class="actions">
+          <button class="act primary" id="freezeBtn">📌 Figer comme référence</button>
+          <button class="act" id="clearBtn" style="display:none">✕ Effacer la référence</button>
+          <button class="act" data-reco="dinner">🕐 Dîner plus tôt (18h)</button>
+          <button class="act" data-reco="walk">🚶 Marche après le dîner</button>
+          <button class="act" data-reco="carb">🥗 Réduire les glucides</button>
+          <button class="act" data-reco="reset">↺ Réinitialiser</button>
+        </div>
+        <div class="note"><b>Effet circadien :</b> la sensibilité à l'insuline suit l'horloge interne — meilleure le matin, plus faible le soir. Un même repas provoque donc un pic plus élevé le soir. Les bandes indiquent le sommeil et le créneau d'activité ; ▲ = repas.</div>
+      </div>
+
+      <div class="card">
+        <h2>Pourquoi cette prédiction ? — contribution estimée de chaque facteur</h2>
+        <div id="interp"></div>
+        <div class="note">Chaque barre estime de combien un facteur <b>élève</b> (<span style="color:var(--critical)">orange/rouge</span>) ou <b>abaisse</b> (<span style="color:var(--good-text)">vert</span>) la glycémie moyenne, par rapport à un profil de référence (glucides 45 g, IG moyen, <b>repas 8h/13h/19h</b>, activité 45 min modérée, stress nul, metformine, IMC 24). « Horaires des repas » capture précisément l'effet du <i>timing</i> circadien. Attribution un-facteur-à-la-fois, esprit SHAP.</div>
+      </div>
+
+      <details class="demo">
+        <summary>🎬 Guide de démonstration (≈ 3 min)</summary>
+        <ol>
+          <li><b>Le patient et sa journée</b> : présentez le jumeau et son emploi du temps. Notez le dîner tardif (20h30).</li>
+          <li><b>Figer la référence</b> (📌).</li>
+          <li><b>Montrer l'effet circadien</b> : cliquez « 🕐 Dîner plus tôt (18h) » — même repas, mais le pic du soir baisse nettement, le Temps dans la cible monte. C'est l'horloge interne, pas moins de glucides.</li>
+          <li><b>Marche après le dîner</b> : cliquez « 🚶 Marche après le dîner » — la glycémie post-dîner s'aplatit (captation musculaire du glucose).</li>
+          <li><b>Interprétabilité</b> : « Horaires des repas » apparaît comme un contributeur — le modèle explique pourquoi.</li>
+          <li><b>Limites</b> : modèle simplifié ; pour publier, la modulation circadienne serait apprise sur données horodatées (ShanghaiT2DM).</li>
+        </ol>
+      </details>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="pill" style="background:var(--band);color:var(--good-text)">Démo</span>
+    <b>Avertissement.</b> GlucoTwin est un prototype pédagogique. Les glycémies sont générées par un modèle physiologique simplifié intégrant une modulation circadienne, à des fins de démonstration ; il <b>ne doit pas</b> servir à une décision médicale. HbA1c estimée via ADAG : HbA1c(%) = (glycémie moyenne + 46,7) / 28,7. Dépense estimée : MET × 3,5 × poids / 200 × durée.<br>
+    Projet <i>Personalized Diabetes Monitoring Twin</i> — Cours AI for Health (PGE5, Prof. A. Kar). Groupe : Regis Likassi, Hakim Djomo, Jean Direl Nze, Xavier Ondo, Seth Ndinga.
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var S = {
+    age:54, sex:"H", bmi:29, dur:6, sens:45, metf:true,
+    wake:7, bed:23.5, tB:7.75, tL:12.75, tD:21.0,
+    exStart:8, exDur:20, met:4.8,
+    carb:65, gi:1.0, str:40
+  };
+  var reference=null;
+  var N=289;
+
+  // ---- helpers ----
+  function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
+  function hhmm(v){ var vv=((v%24)+24)%24; var h=Math.floor(vv); var m=Math.round((vv-h)*60); if(m===60){h=(h+1)%24;m=0;} return (h<10?'0'+h:h)+'h'+(m<10?'0'+m:m); }
+  function fr(x){ return String(x).replace(".",","); }
+  function sleepHours(p){ return clamp(p.wake+24-p.bed,3,11); }
+  function weightKg(p){ return p.bmi*2.96; } // height ~1.72 m assumption
+  function kcal(p){ return p.met*3.5*weightKg(p)/200*p.exDur; }
+
+  // ---- circadian insulin-sensitivity modulation ----
+  // Insulin sensitivity declines across the waking day: excursion multiplier
+  // small in the morning (~0.82), large in the evening (~1.26). Monotone matin<midi<soir.
+  function circ(h){ return clamp(0.80 + 0.033*(h-7), 0.75, 1.30); }
+
+  // ---- glucose engine ----
+  function metabolicBurden(p){
+    var M=1.0;
+    M *= 1 + Math.max(0,p.bmi-24)*0.026;
+    M *= 1 + p.dur*0.020;
+    M *= (1.35 - p.sens/100*0.72);
+    M *= (1 + p.str/100*0.22);
+    M *= (1 + Math.max(0,7-sleepHours(p))*0.045);
+    M *= (1 - Math.min(0.20, kcal(p)/400*0.20));   // overall activity benefit
+    if(p.metf) M*=0.83;
+    if(p.sex==="H") M*=1.02;
+    return clamp(M,0.55,2.6);
+  }
+  function fasting(M){ return clamp(88+(M-1)*62,85,195); }
+  function gammaExc(min,tp,s){ if(min<=0)return 0; var x=min/tp; return Math.pow(x*Math.exp(1-x),s); }
+  function meals(p){ return [{t:p.tB,w:0.85},{t:p.tL,w:1.15},{t:p.tD,w:1.0}]; }
+  function exOverlapsMeal(p,tm){ return p.exDur>0 && p.exStart>=tm+0.25 && p.exStart<=tm+2.0; }
+  function exDip(h,p){
+    if(p.exDur<=0) return 0;
+    var mag=Math.min(32, kcal(p)*0.06);
+    return mag*gammaExc((h-p.exStart)*60,75,1.5);
+  }
+  function glucoseAt(h,p,M){
+    var G0=fasting(M);
+    var dawn=12*M*Math.exp(-Math.pow(h-(p.wake-0.5),2)/(2*1.2*1.2));
+    var g=G0+dawn;
+    var ms=meals(p);
+    for(var i=0;i<ms.length;i++){
+      var tm=ms[i].t, carbs=p.carb*ms[i].w, kcm=circ(tm);
+      var A=carbs*p.gi*M*0.92*kcm;
+      if(exOverlapsMeal(p,tm)) A*=(1-Math.min(0.32, kcal(p)/500*0.32));
+      var tp=(75-(p.gi-0.78)/(1.28-0.78)*20)*(1+0.18*(kcm-1)/0.26);
+      g+=A*gammaExc((h-tm)*60,tp,1.7);
+    }
+    g-=exDip(h,p);
+    g+=1.6*Math.sin(h*2.7+1.3)+1.1*Math.sin(h*6.1);
+    return Math.max(55,g);
+  }
+  function series(p){
+    var M=metabolicBurden(p), a=new Array(N);
+    for(var i=0;i<N;i++){ var h=i/(N-1)*24; a[i]={t:h,g:glucoseAt(h,p,M)}; }
+    return a;
+  }
+  function metrics(a){
+    var sum=0,peak=0,inr=0;
+    for(var i=0;i<a.length;i++){ var g=a[i].g; sum+=g; if(g>peak)peak=g; if(g>=70&&g<=180)inr++; }
+    var mean=sum/a.length;
+    return {mean:mean,peak:peak,tir:inr/a.length*100,a1c:(mean+46.7)/28.7};
+  }
+
+  // ---- interpretability ----
+  var REF={carb:45,gi:1.0,str:0,bmi:24,exDur:45,met:4.8,metf:true,tB:8,tL:13,tD:19};
+  var FACTORS=[
+    {key:"carb",name:"Glucides"},
+    {key:"gi",name:"Index glycémique"},
+    {key:"schedule",name:"Horaires des repas"},
+    {key:"str",name:"Stress"},
+    {key:"bmi",name:"Corpulence (IMC)"},
+    {key:"activite",name:"Activité physique"},
+    {key:"metf",name:"Metformine"}
+  ];
+  function attribution(p){
+    var base=metrics(series(p)).mean, out=[];
+    for(var i=0;i<FACTORS.length;i++){
+      var f=FACTORS[i], q=Object.assign({},p);
+      if(f.key==="schedule"){ q.tB=REF.tB;q.tL=REF.tL;q.tD=REF.tD; }
+      else if(f.key==="activite"){ q.exDur=REF.exDur;q.met=REF.met; }
+      else q[f.key]=REF[f.key];
+      out.push({name:f.name, delta: base-metrics(series(q)).mean});
+    }
+    out.sort(function(a,b){return Math.abs(b.delta)-Math.abs(a.delta);});
+    return out;
+  }
+
+  // ---- chart geometry ----
+  var VBW=920,VBH=380,ML=52,MR=18,MT=18,MB=34,PW=VBW-ML-MR,PH=VBH-MT-MB,GMIN=40,GMAX=300;
+  function xT(t){return ML+t/24*PW;}
+  function yG(g){return MT+(1-(g-GMIN)/(GMAX-GMIN))*PH;}
+  function path(a){var d="";for(var i=0;i<a.length;i++){d+=(i?"L":"M")+xT(a[i].t).toFixed(1)+" "+yG(a[i].g).toFixed(1)+" ";}return d.trim();}
+  function areaPath(a){var d="M"+xT(a[0].t).toFixed(1)+" "+yG(GMIN).toFixed(1)+" ";for(var i=0;i<a.length;i++){d+="L"+xT(a[i].t).toFixed(1)+" "+yG(a[i].g).toFixed(1)+" ";}d+="L"+xT(a[a.length-1].t).toFixed(1)+" "+yG(GMIN).toFixed(1)+" Z";return d;}
+
+  var curSeries=[];
+  function drawChart(){
+    curSeries=series(S);
+    var svg=document.getElementById("chart"), yTicks=[70,100,140,180,220,260], p=[];
+    p.push('<defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--series-1)" stop-opacity="0.20"/><stop offset="100%" stop-color="var(--series-1)" stop-opacity="0.01"/></linearGradient></defs>');
+    // sleep bands (asleep 0..wake and bed..24)
+    p.push('<rect x="'+ML+'" y="'+MT+'" width="'+(xT(S.wake)-ML).toFixed(1)+'" height="'+PH+'" fill="var(--sleepband)"/>');
+    if(S.bed<24){ p.push('<rect x="'+xT(S.bed).toFixed(1)+'" y="'+MT+'" width="'+(xT(24)-xT(S.bed)).toFixed(1)+'" height="'+PH+'" fill="var(--sleepband)"/>'); }
+    // exercise band
+    if(S.exDur>0){ var ex1=xT(S.exStart), ex2=xT(Math.min(24,S.exStart+S.exDur/60)); p.push('<rect x="'+ex1.toFixed(1)+'" y="'+MT+'" width="'+(ex2-ex1).toFixed(1)+'" height="'+PH+'" fill="var(--exband)"/>'); p.push('<text class="band-lab" x="'+((ex1+ex2)/2).toFixed(1)+'" y="'+(MT+11)+'" text-anchor="middle">Activité</text>'); }
+    // target band
+    p.push('<rect x="'+ML+'" y="'+yG(180).toFixed(1)+'" width="'+PW+'" height="'+(yG(70)-yG(180)).toFixed(1)+'" fill="var(--band)"/>');
+    for(var i=0;i<yTicks.length;i++){ var y=yG(yTicks[i]); p.push('<line class="'+((yTicks[i]===70||yTicks[i]===180)?"thr-line":"grid-line")+'" x1="'+ML+'" y1="'+y.toFixed(1)+'" x2="'+(ML+PW)+'" y2="'+y.toFixed(1)+'"/>'); p.push('<text class="t-tick" x="'+(ML-8)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end">'+yTicks[i]+'</text>'); }
+    for(var h=0;h<=24;h+=3){ var x=xT(h); p.push('<line class="grid-line" x1="'+x.toFixed(1)+'" y1="'+MT+'" x2="'+x.toFixed(1)+'" y2="'+(MT+PH)+'"/>'); p.push('<text class="t-tick" x="'+x.toFixed(1)+'" y="'+(MT+PH+18)+'" text-anchor="middle">'+(h<10?"0"+h:h)+'h</text>'); }
+    p.push('<line class="axis-line" x1="'+ML+'" y1="'+(MT+PH)+'" x2="'+(ML+PW)+'" y2="'+(MT+PH)+'"/>');
+    if(reference){ p.push('<path class="ref-line" d="'+path(series(reference))+'"/>'); }
+    p.push('<path class="gluc-area" d="'+areaPath(curSeries)+'"/>');
+    p.push('<path class="gluc-line" d="'+path(curSeries)+'"/>');
+    var ms=meals(S);
+    for(var mi=0;mi<ms.length;mi++){ var mx=xT(ms[mi].t); p.push('<path d="M'+(mx-4).toFixed(1)+' '+(MT+PH+5)+' L'+(mx+4).toFixed(1)+' '+(MT+PH+5)+' L'+mx.toFixed(1)+' '+(MT+PH-1)+' Z" fill="var(--muted)"/>'); }
+    p.push('<line id="crossX" x1="0" y1="'+MT+'" x2="0" y2="'+(MT+PH)+'" stroke="var(--series-1)" stroke-width="1" stroke-dasharray="3 3" style="opacity:0"/>');
+    p.push('<circle id="crossDot" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2" style="opacity:0"/>');
+    p.push('<rect id="hitrect" x="'+ML+'" y="'+MT+'" width="'+PW+'" height="'+PH+'" fill="transparent" style="cursor:crosshair"/>');
+    svg.innerHTML=p.join("");
+    document.getElementById("lgRef").style.display=reference?"flex":"none";
+    attachHover(svg);
+  }
+  function attachHover(svg){
+    var rect=document.getElementById("hitrect"),cx=document.getElementById("crossX"),dot=document.getElementById("crossDot"),tt=document.getElementById("tt");
+    function move(ev){
+      var r=svg.getBoundingClientRect(),scale=VBW/r.width,vx=(ev.clientX-r.left)*scale;
+      var t=clamp((vx-ML)/PW*24,0,24),idx=clamp(Math.round(t/24*(N-1)),0,N-1),pt=curSeries[idx];
+      var px=xT(pt.t),py=yG(pt.g);
+      cx.setAttribute("x1",px);cx.setAttribute("x2",px);cx.style.opacity=1;
+      dot.setAttribute("cx",px);dot.setAttribute("cy",py);dot.style.opacity=1;
+      var refTxt="";
+      if(reference){ var rg=glucoseAt(pt.t,reference,metabolicBurden(reference)); refTxt='<div class="tt-t" style="margin-top:3px">Référence : <span style="color:var(--series-2);font-weight:650">'+Math.round(rg)+'</span> mg/dL</div>'; }
+      tt.innerHTML='<div class="tt-t">'+hhmm(pt.t)+'</div><div class="tt-v" style="color:var(--series-1)">'+Math.round(pt.g)+' mg/dL</div>'+refTxt;
+      tt.style.opacity=1;
+      var left=(px/scale)+12; if(left>r.width-140)left=(px/scale)-130;
+      tt.style.left=left+"px"; tt.style.top=((py/scale)-10)+"px";
+    }
+    function leave(){cx.style.opacity=0;dot.style.opacity=0;tt.style.opacity=0;}
+    rect.addEventListener("mousemove",move);rect.addEventListener("mouseleave",leave);
+    rect.addEventListener("touchmove",function(e){if(e.touches[0]){move(e.touches[0]);e.preventDefault();}},{passive:false});
+    rect.addEventListener("touchend",leave);
+  }
+
+  function drawInterp(){
+    var data=attribution(S),maxAbs=1;
+    for(var i=0;i<data.length;i++)maxAbs=Math.max(maxAbs,Math.abs(data[i].delta));
+    var rows=[];
+    for(var j=0;j<data.length;j++){
+      var d=data[j],pos=d.delta>=0,frac=Math.min(1,Math.abs(d.delta)/maxAbs),half=frac*48;
+      var col=pos?(Math.abs(d.delta)>maxAbs*0.55?"var(--critical)":"var(--serious)"):"var(--good)";
+      var bs=pos?('left:50%;width:'+half+'%;background:'+col):('right:50%;width:'+half+'%;background:'+col);
+      rows.push('<div class="interp-row"><span class="iname">'+d.name+'</span><span class="ibar-wrap"><span class="interp-center" style="left:50%"></span><span class="ibar" style="'+bs+'"></span></span><span class="ival" style="color:'+col+'">'+(pos?"+":"−")+Math.abs(d.delta).toFixed(1)+'</span></div>');
+    }
+    document.getElementById("interp").innerHTML=rows.join("");
+  }
+  function fmtDelta(el,cur,ref,unit,invert,digits){
+    digits=digits||0;
+    if(ref===null){el.innerHTML="&nbsp;";return;}
+    var d=cur-ref,good=invert?d>0:d<0,cls=Math.abs(d)<(digits?0.05:0.5)?"flat":(good?"down":"up"),arrow=d>0?"▲":(d<0?"▼":"■");
+    el.className="tdelta "+cls; el.textContent=arrow+" "+(d>=0?"+":"−")+Math.abs(d).toFixed(digits)+" "+unit+" vs réf.";
+  }
+  function render(){
+    drawChart();
+    var m=metrics(curSeries);
+    document.getElementById("mMean").textContent=Math.round(m.mean);
+    document.getElementById("mTir").textContent=Math.round(m.tir);
+    document.getElementById("mPeak").textContent=Math.round(m.peak);
+    document.getElementById("mA1c").textContent=m.a1c.toFixed(1);
+    document.getElementById("slpOut").textContent=fr(sleepHours(S).toFixed(1));
+    document.getElementById("kcalOut").textContent=Math.round(kcal(S));
+    var rM=reference?metrics(series(reference)):null;
+    fmtDelta(document.getElementById("dMean"),m.mean,rM?rM.mean:null,"mg/dL",false,0);
+    fmtDelta(document.getElementById("dTir"),m.tir,rM?rM.tir:null,"pts",true,0);
+    fmtDelta(document.getElementById("dPeak"),m.peak,rM?rM.peak:null,"mg/dL",false,0);
+    fmtDelta(document.getElementById("dA1c"),m.a1c,rM?rM.a1c:null,"%",false,1);
+    drawInterp();
+  }
+
+  // ---- controls ----
+  function bindRange(id,key,fmt){ var el=document.getElementById(id); el.addEventListener("input",function(){ S[key]=parseFloat(el.value); document.getElementById(id+"V").textContent=fmt(S[key]); render(); }); }
+  bindRange("age","age",function(v){return v+" ans";});
+  bindRange("bmi","bmi",function(v){return fr(v)+" kg/m²";});
+  bindRange("dur","dur",function(v){return v+(v>1?" ans":" an");});
+  bindRange("sens","sens",function(v){return v+" / 100";});
+  bindRange("carb","carb",function(v){return v+" g";});
+  bindRange("str","str",function(v){return v+" / 100";});
+  bindRange("wake","wake",function(v){return hhmm(v);});
+  bindRange("bed","bed",function(v){return hhmm(v);});
+  bindRange("tB","tB",function(v){return hhmm(v);});
+  bindRange("tL","tL",function(v){return hhmm(v);});
+  bindRange("tD","tD",function(v){return hhmm(v);});
+  bindRange("exStart","exStart",function(v){return hhmm(v);});
+  bindRange("exDur","exDur",function(v){return v+" min";});
+
+  function bindSeg(id,key){ var seg=document.getElementById(id); seg.querySelectorAll("button").forEach(function(b){ b.addEventListener("click",function(){ seg.querySelectorAll("button").forEach(function(x){x.classList.remove("active");}); b.classList.add("active"); S[key]=isNaN(parseFloat(b.dataset.v))?b.dataset.v:parseFloat(b.dataset.v); render(); }); }); }
+  bindSeg("sexSeg","sex"); bindSeg("giSeg","gi"); bindSeg("metSeg","met");
+  document.getElementById("metf").addEventListener("change",function(e){S.metf=e.target.checked;render();});
+
+  document.getElementById("freezeBtn").addEventListener("click",function(){reference=Object.assign({},S);document.getElementById("clearBtn").style.display="flex";render();});
+  document.getElementById("clearBtn").addEventListener("click",function(){reference=null;document.getElementById("clearBtn").style.display="none";render();});
+
+  function setSlider(id,key,val,fmt){document.getElementById(id).value=val;S[key]=val;document.getElementById(id+"V").textContent=fmt(val);}
+  document.querySelectorAll("[data-reco]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var r=btn.dataset.reco;
+      if(r==="carb"){setSlider("carb","carb",Math.max(25,Math.round(S.carb*0.6)),function(v){return v+" g";});}
+      else if(r==="dinner"){setSlider("tD","tD",18.0,function(v){return hhmm(v);});}
+      else if(r==="walk"){setSlider("exStart","exStart",Math.min(22,S.tD+0.75),function(v){return hhmm(v);});setSlider("exDur","exDur",Math.max(30,S.exDur),function(v){return v+" min";});}
+      else if(r==="reset"){ S={age:54,sex:"H",bmi:29,dur:6,sens:45,metf:true,wake:7,bed:23.5,tB:7.75,tL:12.75,tD:21.0,exStart:8,exDur:20,met:4.8,carb:65,gi:1.0,str:40}; reference=null; document.getElementById("clearBtn").style.display="none"; syncUI(); }
+      render();
+    });
+  });
+
+  function syncUI(){
+    setSlider("age","age",S.age,function(v){return v+" ans";});
+    setSlider("bmi","bmi",S.bmi,function(v){return fr(v)+" kg/m²";});
+    setSlider("dur","dur",S.dur,function(v){return v+(v>1?" ans":" an");});
+    setSlider("sens","sens",S.sens,function(v){return v+" / 100";});
+    setSlider("carb","carb",S.carb,function(v){return v+" g";});
+    setSlider("str","str",S.str,function(v){return v+" / 100";});
+    setSlider("wake","wake",S.wake,hhmm);setSlider("bed","bed",S.bed,hhmm);
+    setSlider("tB","tB",S.tB,hhmm);setSlider("tL","tL",S.tL,hhmm);setSlider("tD","tD",S.tD,hhmm);
+    setSlider("exStart","exStart",S.exStart,hhmm);setSlider("exDur","exDur",S.exDur,function(v){return v+" min";});
+    document.querySelectorAll("#sexSeg button").forEach(function(b){b.classList.toggle("active",b.dataset.v===S.sex);});
+    document.querySelectorAll("#giSeg button").forEach(function(b){b.classList.toggle("active",parseFloat(b.dataset.v)===S.gi);});
+    document.querySelectorAll("#metSeg button").forEach(function(b){b.classList.toggle("active",parseFloat(b.dataset.v)===S.met);});
+    document.getElementById("metf").checked=S.metf;
+  }
+
+  document.getElementById("themeBtn").addEventListener("click",function(){var root=document.documentElement;root.setAttribute("data-theme",root.getAttribute("data-theme")==="dark"?"light":"dark");render();});
+
+  render();
+})();
+</script>
+</body>
+</html>
