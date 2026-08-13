@@ -20,9 +20,11 @@
         |-- 02_horizons.png
         |-- 03_ablation.png
         |-- 04_importance.png
+        |-- 05_mae_vs_clinical.png
         |-- 05_mae_vs_clinique.png
         |-- 06_zones.png
         |-- 07_conforme.png
+    |-- GlucoTwin_presentation.pptx
 |-- LICENSE
 |-- notebooks
     |-- couche2_prevision.ipynb
@@ -32,6 +34,7 @@
 |-- README.md
 |-- requirements.txt
 |-- scripts
+    |-- build_deck.js
     |-- run_layer2.py
     |-- sensitivity.py
 |-- src

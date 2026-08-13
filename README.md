@@ -92,6 +92,12 @@ l'activité → **12,51** avec les modulateurs, soit **−34 %**.
 >
 > En particulier, la glycémie synthétique est engendrée à partir des concepts que le modèle reçoit : la tâche est **plus facile qu'en réalité**, surtout à court horizon. Sur les vraies données de CGMacros, un modèle comparable obtient 13,11 mg/dL contre 13,39 pour la persistance à 30 min — quasiment ex æquo. **Ce qui se transférera aux données réelles, c'est la pente, pas les valeurs.**
 
+### Présentation
+
+Le support de soutenance (12 slides, anglais, avec le script complet en notes du
+présentateur) est dans [`docs/GlucoTwin_presentation.pptx`](docs/GlucoTwin_presentation.pptx).
+Il se régénère avec `node scripts/build_deck.js` depuis `docs/figures/`.
+
 ### Figures
 
 Les figures du dernier run complet sont dans [`docs/figures/`](docs/figures/) :
@@ -101,7 +107,7 @@ Les figures du dernier run complet sont dans [`docs/figures/`](docs/figures/) :
 | `02_horizons.png` | **la figure centrale** — l'écart se creuse, avec la dispersion patient par patient |
 | `03_ablation.png` | l'apport de chaque groupe de concepts |
 | `04_importance.png` | ce sur quoi le modèle s'appuie vraiment |
-| `05_mae_vs_clinique.png` | **la contradiction** — MAE et clinique disent l'inverse |
+| `05_mae_vs_clinical.png` | **la contradiction** — MAE et clinique disent l'inverse |
 | `07_conforme.png` | la couverture des intervalles |
 
 ---
