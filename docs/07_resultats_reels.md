@@ -196,6 +196,72 @@ inutilisable — ce qui est, encore une fois, une information.
 
 ---
 
+## 5 ter. Calibration de la couche 1 par patient — le problème inverse
+
+Le VCO₂ est la limite méthodologique numéro un du projet : les équations de
+Frayn l'exigent, aucun objet connecté ne le mesure, et la partition
+glucides/lipides en dépend à ±25 %. Plutôt que d'afficher un intervalle et de
+s'arrêter là, on peut **inverser le problème** — on n'a pas besoin de mesurer le
+mécanisme si on observe son effet, et la glycémie, elle, est mesurée en continu.
+
+Cinq paramètres par patient : trois gains sur les branches de la couche 1
+(apparition alimentaire, production hépatique, captation), une vitesse de retour
+à l'équilibre et une glycémie d'équilibre. **Ajustés sur les 3 premières
+journées, testés sur les 6 suivantes.**
+
+| | RMSE sur les journées de test |
+|---|---:|
+| paramètres **calibrés par patient** | **27,33 mg/dL** |
+| paramètres de population (médiane des *autres* patients) | 39,97 mg/dL |
+| persistance | 35,95 mg/dL |
+
+**Gain +12,64 mg/dL** [IC95 +8,31, +16,96], p = 1,1e-09, **40 patients sur 44**
+améliorés. Le modèle direct calibré bat la persistance chez **42 sur 44**.
+
+Le gain existe dans les trois sous-groupes, et il est le plus fort chez les
+diabétiques (+17,47 contre +13,78 chez les sains) — c'est-à-dire là où la
+physiologie s'écarte le plus de la moyenne.
+
+### Ce que les paramètres racontent : le patient moyen n'existe pas
+
+| paramètre | p10 | médiane | p90 | rapport p90/p10 |
+|---|---:|---:|---:|---:|
+| gain apparition glucidique | 0,230 | 0,915 | 2,319 | **10,1×** |
+| gain production hépatique | 0,300 | 0,761 | 2,500 | 8,3× |
+| gain captation | 0,300 | 1,045 | 2,500 | 8,3× |
+| vitesse de retour à l'équilibre | 0,014 | 0,038 | 0,095 | 6,7× |
+| glycémie d'équilibre | 92,0 | 128,8 | 166,5 | 1,8× |
+
+Un facteur **dix** sur la sensibilité à la charge glucidique entre le dixième et
+le quatre-vingt-dixième centile. C'est l'argument le plus direct en faveur d'un
+jumeau *personnalisé* plutôt que d'un modèle de population — et il est mesuré
+sur données réelles.
+
+### La limite, et elle est sérieuse
+
+**61 % des patients ont le gain hépatique collé à une borne**, et seuls **5 des
+44** n'ont aucun paramètre saturé. Le gain médian est d'ailleurs plus grand chez
+les patients saturés (+8,97) que chez les autres (+2,97) — signe qu'une part de
+l'amélioration vient de paramètres poussés aux murs pour absorber les défauts du
+modèle, pas d'une identification physiologique.
+
+La cause est structurelle : **production hépatique et captation agissent toutes
+deux sur le niveau de base**, et la glycémie d'équilibre aussi. Trois paramètres
+pour un seul degré de liberté observable. Leur corrélation croisée le confirme
+(r = 0,51 entre les deux gains, r = 0,49 entre captation et équilibre), et seul
+leur **flux net** est réellement identifié — il s'étale de −220 à +170 mg/min
+selon le patient.
+
+**Conclusion honnête, en deux temps.** La calibration patient *généralise* : sur
+des journées jamais vues, elle bat nettement des paramètres de population, et ce
+n'est pas de la sur-adaptation puisque le découpage est temporel. Mais les
+paramètres pris **un par un** ne sont pas interprétables en l'état. La suite
+n'est pas de calibrer davantage, c'est de **reparamétrer** : fusionner les deux
+branches basales en un flux net unique, ce qui rendrait le modèle identifiable
+sans rien perdre de son pouvoir prédictif.
+
+---
+
 ## 6. Trois pièges rencontrés dans les données
 
 ### `bio.csv` est en unités impériales
