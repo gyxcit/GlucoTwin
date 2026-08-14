@@ -262,6 +262,59 @@ sans rien perdre de son pouvoir prédictif.
 
 ---
 
+## 5 quater. La calibration améliore-t-elle la *prévision* ? Non — et c'est instructif
+
+La section précédente montre qu'ajuster les paramètres physiologiques par
+patient améliore nettement le **modèle direct**. Ce n'est pas la question qui
+compte pour l'architecture. Celle-ci est : des concepts calculés avec ces
+paramètres améliorent-ils le **modèle appris** de la couche 2 ?
+
+**Protocole.** Les θ sont ajustés sur la glycémie du patient : évaluer sur les
+journées d'ajustement serait une fuite pure. On reproduit donc le déploiement
+réel — *le jumeau observe la personne 3 jours, puis la sert* — et les journées
+d'observation **sortent de l'évaluation**. Les deux bras portent sur exactement
+les mêmes journées, les mêmes plis, la même graine. Seuls les concepts changent.
+
+| horizon | MAE concepts d'origine | MAE concepts calibrés | écart | p apparié | patients gagnés |
+|---:|---:|---:|---:|---:|---:|
+| 30 min | 12,18 | 12,33 | −0,15 | 0,268 | 19/44 |
+| 60 min | 19,20 | 18,73 | +0,47 | 0,109 | 26/44 |
+| 90 min | 23,43 | 22,56 | +0,87 | 0,151 | 24/44 |
+
+**Aucun écart n'est significatif.** Avec 44 patients, la calibration n'améliore
+pas la prévision de façon démontrable.
+
+### Ce que ce résultat négatif apprend
+
+Le modèle appris **reconstruit déjà**, depuis l'historique glycémique, l'essentiel
+de ce que les gains patient encodent. Un patient qui absorbe vite laisse cette
+signature dans ses vingt dernières minutes de glycémie, et le gradient boosting
+la lit. Personnaliser les concepts en amont ne lui apprend rien qu'il n'ait
+déduit lui-même.
+
+C'est une information sur les architectures à goulot conceptuel en général : le
+goulot sert l'**interprétabilité** — on peut dire *pourquoi* la glycémie monte —
+mais il ne garantit pas un gain de précision, parce que l'historique de la
+variable cible est un raccourci que le modèle prendra toujours.
+
+### La tendance qu'on ne peut pas encore trancher
+
+L'écart croît avec l'horizon : −0,15 → +0,47 → +0,87 mg/dL. La direction est
+physiologiquement cohérente — à court terme l'historique glycémique domine, à
+long terme la physiologie reprend du poids — et la détection d'hyperglycémie
+suit le même sens (68,2 → 69,4 %, 47,6 → 50,1 %, 34,5 → 37,3 %). Mais avec
+p = 0,11 au mieux, **c'est une tendance, pas un résultat**. Il faudrait plus de
+patients, ou des horizons plus longs, pour trancher.
+
+### Où la calibration reste utile
+
+Là où elle a été validée : le **modèle direct**, avec +12,64 mg/dL et
+p = 1,1e-09. C'est-à-dire pour simuler des journées qui n'ont pas eu lieu — les
+scénarios « et si ? » de la démonstration — pas pour prévoir la prochaine demi-heure.
+La distinction n'est pas cosmétique : ce sont deux usages différents du même jumeau.
+
+---
+
 ## 6. Trois pièges rencontrés dans les données
 
 ### `bio.csv` est en unités impériales

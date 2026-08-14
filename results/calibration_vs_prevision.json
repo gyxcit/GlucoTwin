@@ -1,0 +1,140 @@
+{
+  "30": {
+    "origine": {
+      "n_patients": 44,
+      "mae_model": 12.17919086986734,
+      "mae_persistence": 12.96989544895449,
+      "gain_mae": 0.7907045790871531,
+      "ic95_gain": [
+        0.15778843047432567,
+        1.4236207276999804
+      ],
+      "p_value": 0.00041316207477848366,
+      "patients_gagnes": 33,
+      "couverture": 0.8885636810913566,
+      "largeur_intervalle": 54.77662452490261,
+      "sens_hyper": 0.6819433516915814,
+      "sens_hypo": 0.015384615384615385,
+      "n_exemples": 71002
+    },
+    "calibre": {
+      "n_patients": 44,
+      "mae_model": 12.331739832887457,
+      "mae_persistence": 12.96989544895449,
+      "gain_mae": 0.6381556160670322,
+      "ic95_gain": [
+        -0.008197363404954361,
+        1.2845085955390187
+      ],
+      "p_value": 0.011299728580638657,
+      "patients_gagnes": 30,
+      "couverture": 0.8921279212792126,
+      "largeur_intervalle": 56.35931039859604,
+      "sens_hyper": 0.6944335169158143,
+      "sens_hypo": 0.015384615384615385,
+      "n_exemples": 71002
+    },
+    "apparie": {
+      "n_patients": 44,
+      "gain_moyen": -0.1525489630201208,
+      "ic95": [
+        -0.5231087433267141,
+        0.2180108172864725
+      ],
+      "p_value": 0.2679653647409168,
+      "patients_ameliores": 19
+    }
+  },
+  "60": {
+    "origine": {
+      "n_patients": 44,
+      "mae_model": 19.19509596368547,
+      "mae_persistence": 19.125181246426532,
+      "gain_mae": -0.069914717258944,
+      "ic95_gain": [
+        -1.3232069104350939,
+        1.1833774759172058
+      ],
+      "p_value": 0.29403375509559737,
+      "patients_gagnes": 26,
+      "couverture": 0.8871097770154375,
+      "largeur_intervalle": 84.41849432379546,
+      "sens_hyper": 0.47595240475952405,
+      "sens_hypo": 0.0,
+      "n_exemples": 69430
+    },
+    "calibre": {
+      "n_patients": 44,
+      "mae_model": 18.72944448935112,
+      "mae_persistence": 19.125181246426532,
+      "gain_mae": 0.3957367570754096,
+      "ic95_gain": [
+        -0.7812722887310897,
+        1.5727458028819088
+      ],
+      "p_value": 0.1014516336615543,
+      "patients_gagnes": 28,
+      "couverture": 0.8968381932532875,
+      "largeur_intervalle": 85.78388334897437,
+      "sens_hyper": 0.5008499150084992,
+      "sens_hypo": 0.0,
+      "n_exemples": 69430
+    },
+    "apparie": {
+      "n_patients": 44,
+      "gain_moyen": 0.4656514743343537,
+      "ic95": [
+        -0.35533488935248014,
+        1.2866378380211876
+      ],
+      "p_value": 0.10910033597747315,
+      "patients_ameliores": 26
+    }
+  },
+  "90": {
+    "origine": {
+      "n_patients": 44,
+      "mae_model": 23.429190780073373,
+      "mae_persistence": 23.284469404469405,
+      "gain_mae": -0.14472137560397014,
+      "ic95_gain": [
+        -2.1861990298883156,
+        1.896756278680375
+      ],
+      "p_value": 0.32744430846742034,
+      "patients_gagnes": 25,
+      "couverture": 0.8838130338130338,
+      "largeur_intervalle": 101.19929144474504,
+      "sens_hyper": 0.34499237417386885,
+      "sens_hypo": 0.0,
+      "n_exemples": 67858
+    },
+    "calibre": {
+      "n_patients": 44,
+      "mae_model": 22.559377255135278,
+      "mae_persistence": 23.284469404469405,
+      "gain_mae": 0.7250921493341249,
+      "ic95_gain": [
+        -1.1382564137177604,
+        2.58844071238601
+      ],
+      "p_value": 0.06569591060303992,
+      "patients_gagnes": 29,
+      "couverture": 0.890098865098865,
+      "largeur_intervalle": 99.71997805295565,
+      "sens_hyper": 0.37254702592780886,
+      "sens_hypo": 0.0,
+      "n_exemples": 67858
+    },
+    "apparie": {
+      "n_patients": 44,
+      "gain_moyen": 0.8698135249380947,
+      "ic95": [
+        -0.33234147166281525,
+        2.071968521539005
+      ],
+      "p_value": 0.15082177196552493,
+      "patients_ameliores": 24
+    }
+  }
+}

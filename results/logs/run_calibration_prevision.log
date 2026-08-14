@@ -1,0 +1,51 @@
+# Run de reference — la calibration patient ameliore-t-elle la prevision ?
+# commande : python scripts/run_calibrated_forecast.py --cgmacros data/CGMacros --days-fit 3 --horizons 30 60 90
+# commit : af43854  date : 2026-08-14T13:12:03Z
+# ================================================================
+
+==============================================================================
+LA CALIBRATION PATIENT AMELIORE-T-ELLE LA PREVISION ?
+114,155 pas | 45 patients | 3 journees d'observation, le reste evalue
+==============================================================================
+
+1. Ajustement des parametres, patient par patient
+   44 patients calibres
+
+2. Couche 2 sur les journees posterieures a l'observation
+  [origine  ] h= 30 min | MAE  12.18 | pers.  12.97 | gain +0.79 | p 4.1e-04 | 33/44
+  [calibre  ] h= 30 min | MAE  12.33 | pers.  12.97 | gain +0.64 | p 1.1e-02 | 30/44
+      -> apparie : -0.15 mg/dL [IC95 -0.52, +0.22]  p=0.268  19/44 patients
+  [origine  ] h= 60 min | MAE  19.20 | pers.  19.13 | gain -0.07 | p 2.9e-01 | 26/44
+  [calibre  ] h= 60 min | MAE  18.73 | pers.  19.13 | gain +0.40 | p 1.0e-01 | 28/44
+      -> apparie : +0.47 mg/dL [IC95 -0.36, +1.29]  p=0.109  26/44 patients
+  [origine  ] h= 90 min | MAE  23.43 | pers.  23.28 | gain -0.14 | p 3.3e-01 | 25/44
+  [calibre  ] h= 90 min | MAE  22.56 | pers.  23.28 | gain +0.73 | p 6.6e-02 | 29/44
+      -> apparie : +0.87 mg/dL [IC95 -0.33, +2.07]  p=0.151  24/44 patients
+
+==============================================================================
+VERDICT
+==============================================================================
+ horizon  MAE origine  MAE calibre   ecart  p apparie   gagnes  hyper o.  hyper c.
+    30 min        12.18        12.33   -0.15      0.268    19/44     68.2%     69.4%
+    60 min        19.20        18.73   +0.47      0.109    26/44     47.6%     50.1%
+    90 min        23.43        22.56   +0.87      0.151    24/44     34.5%     37.3%
+
+  VERDICT : aucun ecart n'atteint le seuil de significativite au
+  test apparie. Avec ces patients, **la calibration n'ameliore pas
+  la prevision de facon demontrable** — quel que soit le signe de
+  l'ecart moyen (+0.39 mg/dL).
+
+  Une tendance, a verifier sur plus de patients : l'ecart croit
+  avec l'horizon (-0.15 -> +0.47 -> +0.87 mg/dL). C'est physiologiquement
+  coherent — a court terme l'historique glycemique domine, a long
+  terme la physiologie reprend du poids — mais ce n'est pas
+  demontre.
+
+  Lecture : le modele appris reconstruit deja, depuis l'historique
+  glycemique, l'essentiel de ce que les gains patient encodent. La
+  calibration reste utile la ou elle a ete validee — le modele
+  DIRECT — pas au-dela.
+
+Resultats ecrits dans results/calibration_vs_prevision.json
+
+# code retour : 0

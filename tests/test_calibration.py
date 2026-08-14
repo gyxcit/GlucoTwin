@@ -202,3 +202,45 @@ def test_sans_apport_la_glycemie_rejoint_l_equilibre():
     theta = np.array([1.0, 0.0, 0.0, 0.03, 100.0])     # ni repas ni foie ni captation
     g = simulate_glucose(theta, zero, zero, zero, 80.0, g0=250.0)
     assert g[-1] == pytest.approx(100.0, abs=3.0)
+
+
+# --------------------------------------------------------------------------- #
+# 4. Injection des paramètres dans les concepts
+# --------------------------------------------------------------------------- #
+
+def test_les_gains_multiplient_les_bonnes_branches():
+    from glucotwin.calibration import apply_calibration
+
+    df, _ = _cohorte_synthetique(n_patients=3, n_days=4, seed=4)
+    thetas = {"P000": np.array([2.0, 0.5, 1.5, 0.02, 110.0])}
+    cal = apply_calibration(df, thetas)
+
+    a = df[df.patient == "P000"]
+    b = cal[cal.patient == "P000"]
+    assert np.allclose(b["carb_ra_g_min"], a["carb_ra_g_min"] * 2.0)
+    assert np.allclose(b["hepatic_output_mg_min"], a["hepatic_output_mg_min"] * 0.5)
+    assert np.allclose(b["glucose_uptake_mg_min"], a["glucose_uptake_mg_min"] * 1.5)
+    # le flux net doit suivre, pas rester sur l'ancienne valeur
+    attendu = (b["carb_ra_g_min"] * 1000.0 + b["hepatic_output_mg_min"]
+               - b["glucose_uptake_mg_min"])
+    assert np.allclose(b["net_glucose_flux_mg_min"], attendu)
+
+
+def test_un_patient_sans_theta_reste_intact():
+    from glucotwin.calibration import apply_calibration
+
+    df, _ = _cohorte_synthetique(n_patients=3, n_days=3, seed=6)
+    cal = apply_calibration(df, {"P000": np.array([2.0, 2.0, 2.0, 0.02, 110.0])})
+    a = df[df.patient == "P002"]["carb_ra_g_min"].to_numpy()
+    b = cal[cal.patient == "P002"]["carb_ra_g_min"].to_numpy()
+    assert np.allclose(a, b)
+
+
+def test_les_journees_d_observation_sont_coupees():
+    """Sans cette coupe, les journées ayant servi à ajuster θ seraient évaluées."""
+    from glucotwin.calibration import apply_calibration
+
+    df, _ = _cohorte_synthetique(n_patients=2, n_days=6, seed=8)
+    cal = apply_calibration(df, {}, days_from=3)
+    assert cal["day"].min() == 3
+    assert set(cal["day"].unique()) == {3, 4, 5}

@@ -330,3 +330,46 @@ def print_summary(s: dict, title: str = "") -> None:
     print(f"  Modele direct > persistance   {s['bat_la_persistance']}/{s['n_patients']}")
     print("  Parametres medians            " + "  ".join(
         f"{k}={v:.3f}" for k, v in s["theta_median"].items()))
+
+
+# --------------------------------------------------------------------------- #
+# Injecter les paramètres ajustés dans les concepts
+# --------------------------------------------------------------------------- #
+
+def apply_calibration(df, thetas: dict, *, days_from: int | None = None):
+    """Réécrit la table de concepts avec les gains propres à chaque patient.
+
+    Les trois gains multiplient les trois branches de la couche 1, et le flux
+    net est recalculé en conséquence. Un patient sans θ garde ses concepts
+    d'origine — on ne lui invente pas des paramètres.
+
+    **Sur la fuite d'information.** Les θ sont ajustés sur la glycémie du
+    patient : les concepts calibrés en portent donc la trace. Le seul protocole
+    honnête est celui du déploiement réel — le jumeau **observe la personne
+    pendant K jours**, puis la sert. `days_from` coupe les journées
+    d'observation, pour que l'évaluation ne porte que sur des journées
+    postérieures à la calibration.
+    """
+    out = df.copy()
+    ra = out["carb_ra_g_min"].to_numpy(float).copy()
+    hgp = out["hepatic_output_mg_min"].to_numpy(float).copy()
+    rd = out["glucose_uptake_mg_min"].to_numpy(float).copy()
+    pat = out["patient"].to_numpy()
+
+    for pid, theta in thetas.items():
+        m = pat == pid
+        if not m.any():
+            continue
+        g_ra, g_hgp, g_rd = float(theta[0]), float(theta[1]), float(theta[2])
+        ra[m] *= g_ra
+        hgp[m] *= g_hgp
+        rd[m] *= g_rd
+
+    out["carb_ra_g_min"] = ra
+    out["hepatic_output_mg_min"] = hgp
+    out["glucose_uptake_mg_min"] = rd
+    out["net_glucose_flux_mg_min"] = ra * 1000.0 + hgp - rd
+
+    if days_from is not None:
+        out = out[out["day"] >= days_from].copy()
+    return out
