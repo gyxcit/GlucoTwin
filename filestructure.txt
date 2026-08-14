@@ -30161,6 +30161,7 @@
 |-- README.md
 |-- requirements.txt
 |-- results
+    |-- ablation_reelle.json
     |-- calibration_reelle.json
     |-- calibration_vs_prevision.json
     |-- cgmacros_reel.json
@@ -30171,6 +30172,7 @@
 |-- scripts
     |-- build_deck.js
     |-- inspect_cgmacros.py
+    |-- run_ablation.py
     |-- run_calibrated_forecast.py
     |-- run_calibration.py
     |-- run_cgmacros.py

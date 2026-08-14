@@ -1,0 +1,470 @@
+{
+  "30": {
+    "bras": {
+      "historique": {
+        "n_patients": 45,
+        "mae_model": 13.080829500968987,
+        "mae_persistence": 13.4090016400164,
+        "gain_mae": 0.3281721390474111,
+        "ic95_gain": [
+          -0.2543393758765488,
+          0.910683653971371
+        ],
+        "p_value": 0.15633603877535052,
+        "patients_gagnes": 30,
+        "couverture": 0.8983053163864972,
+        "largeur_intervalle": 59.708343698658254,
+        "sens_hyper": 0.6863356011953965,
+        "n_features": 11,
+        "n_concepts": 0
+      },
+      "+ repas": {
+        "n_patients": 45,
+        "mae_model": 12.400282503757813,
+        "mae_persistence": 13.4090016400164,
+        "gain_mae": 1.008719136258589,
+        "ic95_gain": [
+          0.48934628580726225,
+          1.5280919867099159
+        ],
+        "p_value": 0.000317785723268571,
+        "patients_gagnes": 35,
+        "couverture": 0.8980331192200812,
+        "largeur_intervalle": 57.95684970673494,
+        "sens_hyper": 0.6975901316207795,
+        "n_features": 13,
+        "n_concepts": 2
+      },
+      "+ activite": {
+        "n_patients": 45,
+        "mae_model": 12.31818567653034,
+        "mae_persistence": 13.4090016400164,
+        "gain_mae": 1.0908159634860604,
+        "ic95_gain": [
+          0.5631524146799595,
+          1.6184795122921614
+        ],
+        "p_value": 0.0002349315846004174,
+        "patients_gagnes": 35,
+        "couverture": 0.8988872944284997,
+        "largeur_intervalle": 57.725661398189644,
+        "sens_hyper": 0.7031220194569848,
+        "n_features": 19,
+        "n_concepts": 8
+      },
+      "+ modulateurs": {
+        "n_patients": 45,
+        "mae_model": 12.330931966258218,
+        "mae_persistence": 13.4090016400164,
+        "gain_mae": 1.0780696737581816,
+        "ic95_gain": [
+          0.5505691489090453,
+          1.6055701986073179
+        ],
+        "p_value": 0.000132207787430616,
+        "patients_gagnes": 34,
+        "couverture": 0.8977768666575555,
+        "largeur_intervalle": 57.6705066477411,
+        "sens_hyper": 0.7003878679977109,
+        "n_features": 24,
+        "n_concepts": 13
+      }
+    },
+    "pas_a_pas": [
+      {
+        "groupe": "+ repas",
+        "gain": 0.6805469972111776,
+        "ic95": [
+          0.48618416022720295,
+          0.8749098341951522
+        ],
+        "p_value": 6.05958803134854e-08,
+        "patients_ameliores": 41,
+        "n": 45
+      },
+      {
+        "groupe": "+ activite",
+        "gain": 0.08209682722747137,
+        "ic95": [
+          -0.019424359234272826,
+          0.18361801368921557
+        ],
+        "p_value": 0.0706659526065323,
+        "patients_ameliores": 29,
+        "n": 45
+      },
+      {
+        "groupe": "+ modulateurs",
+        "gain": -0.012746289727878453,
+        "ic95": [
+          -0.10375677471647049,
+          0.0782641952607136
+        ],
+        "p_value": 0.6226416352967021,
+        "patients_ameliores": 20,
+        "n": 45
+      }
+    ],
+    "total": {
+      "gain": 0.7498975347107707,
+      "ic95": [
+        0.5222037992828407,
+        0.9775912701387007
+      ],
+      "p_value": 5.0145445129601285e-08,
+      "patients_ameliores": 39,
+      "n": 45
+    }
+  },
+  "60": {
+    "bras": {
+      "historique": {
+        "n_patients": 45,
+        "mae_model": 21.662698058284015,
+        "mae_persistence": 19.97223340321453,
+        "gain_mae": -1.6904646550694762,
+        "ic95_gain": [
+          -3.372575579210652,
+          -0.00835373092829994
+        ],
+        "p_value": 0.2666189814925133,
+        "patients_gagnes": 25,
+        "couverture": 0.8949778709527136,
+        "largeur_intervalle": 94.05891348701206,
+        "sens_hyper": 0.3881281488179822,
+        "n_features": 11,
+        "n_concepts": 0
+      },
+      "+ repas": {
+        "n_patients": 45,
+        "mae_model": 20.72791289266174,
+        "mae_persistence": 19.97223340321453,
+        "gain_mae": -0.7556794894472041,
+        "ic95_gain": [
+          -2.4774725950914913,
+          0.9661136161970829
+        ],
+        "p_value": 0.6385636627978784,
+        "patients_gagnes": 27,
+        "couverture": 0.8943524341952016,
+        "largeur_intervalle": 91.46066730426966,
+        "sens_hyper": 0.42417000387546827,
+        "n_features": 13,
+        "n_concepts": 2
+      },
+      "+ activite": {
+        "n_patients": 45,
+        "mae_model": 20.534269451239854,
+        "mae_persistence": 19.97223340321453,
+        "gain_mae": -0.5620360480253166,
+        "ic95_gain": [
+          -2.2449306808835923,
+          1.1208585848329593
+        ],
+        "p_value": 0.4806829813387594,
+        "patients_gagnes": 28,
+        "couverture": 0.8951991614255765,
+        "largeur_intervalle": 90.75596687550451,
+        "sens_hyper": 0.43108125565172456,
+        "n_features": 19,
+        "n_concepts": 8
+      },
+      "+ modulateurs": {
+        "n_patients": 45,
+        "mae_model": 20.65876165257099,
+        "mae_persistence": 19.97223340321453,
+        "gain_mae": -0.6865282493564592,
+        "ic95_gain": [
+          -2.4425602041526893,
+          1.0695037054397711
+        ],
+        "p_value": 0.5457123217130402,
+        "patients_gagnes": 25,
+        "couverture": 0.8938539482879104,
+        "largeur_intervalle": 91.07150111515499,
+        "sens_hyper": 0.43495672393747575,
+        "n_features": 24,
+        "n_concepts": 13
+      }
+    },
+    "pas_a_pas": [
+      {
+        "groupe": "+ repas",
+        "gain": 0.9347851656222723,
+        "ic95": [
+          0.3290232295496165,
+          1.5405471016949281
+        ],
+        "p_value": 0.00030234803955409006,
+        "patients_ameliores": 37,
+        "n": 45
+      },
+      {
+        "groupe": "+ activite",
+        "gain": 0.1936434414218872,
+        "ic95": [
+          -0.12250976235088654,
+          0.509796645194661
+        ],
+        "p_value": 0.3075094087528214,
+        "patients_ameliores": 25,
+        "n": 45
+      },
+      {
+        "groupe": "+ modulateurs",
+        "gain": -0.12449220133114246,
+        "ic95": [
+          -0.35303900609574923,
+          0.10405460343346433
+        ],
+        "p_value": 0.41358366071455066,
+        "patients_ameliores": 20,
+        "n": 45
+      }
+    ],
+    "total": {
+      "gain": 1.0039364057130176,
+      "ic95": [
+        0.30461375581362193,
+        1.7032590556124132
+      ],
+      "p_value": 0.00044762446651702703,
+      "patients_ameliores": 34,
+      "n": 45
+    }
+  },
+  "90": {
+    "bras": {
+      "historique": {
+        "n_patients": 45,
+        "mae_model": 26.9915465105223,
+        "mae_persistence": 24.509065255731922,
+        "gain_mae": -2.482481254790386,
+        "ic95_gain": [
+          -5.316277887015711,
+          0.3513153774349389
+        ],
+        "p_value": 0.46681610854761857,
+        "patients_gagnes": 25,
+        "couverture": 0.8927129510462845,
+        "largeur_intervalle": 116.32353705065944,
+        "sens_hyper": 0.248064050400315,
+        "n_features": 11,
+        "n_concepts": 0
+      },
+      "+ repas": {
+        "n_patients": 45,
+        "mae_model": 25.333472496782218,
+        "mae_persistence": 24.509065255731922,
+        "gain_mae": -0.8244072410502983,
+        "ic95_gain": [
+          -3.4535768899896877,
+          1.8047624078890911
+        ],
+        "p_value": 0.5990813209700718,
+        "patients_gagnes": 25,
+        "couverture": 0.8940321273654607,
+        "largeur_intervalle": 110.1082315996554,
+        "sens_hyper": 0.28665179157369736,
+        "n_features": 13,
+        "n_concepts": 2
+      },
+      "+ activite": {
+        "n_patients": 45,
+        "mae_model": 25.52571867781257,
+        "mae_persistence": 24.509065255731922,
+        "gain_mae": -1.0166534220806458,
+        "ic95_gain": [
+          -3.8949759125538126,
+          1.861669068392521
+        ],
+        "p_value": 0.44643011298182955,
+        "patients_gagnes": 27,
+        "couverture": 0.8899733066399733,
+        "largeur_intervalle": 110.04821656892703,
+        "sens_hyper": 0.2931487071794199,
+        "n_features": 19,
+        "n_concepts": 8
+      },
+      "+ modulateurs": {
+        "n_patients": 45,
+        "mae_model": 25.31839991613217,
+        "mae_persistence": 24.509065255731922,
+        "gain_mae": -0.8093346604002529,
+        "ic95_gain": [
+          -3.566592779989744,
+          1.947923459189238
+        ],
+        "p_value": 0.37003716844321843,
+        "patients_gagnes": 25,
+        "couverture": 0.8893119309785975,
+        "largeur_intervalle": 109.393736083804,
+        "sens_hyper": 0.3008925055781599,
+        "n_features": 24,
+        "n_concepts": 13
+      }
+    },
+    "pas_a_pas": [
+      {
+        "groupe": "+ repas",
+        "gain": 1.6580740137400873,
+        "ic95": [
+          1.0009020626196263,
+          2.3152459648605483
+        ],
+        "p_value": 2.8384608299347747e-06,
+        "patients_ameliores": 39,
+        "n": 45
+      },
+      {
+        "groupe": "+ activite",
+        "gain": -0.19224618103034752,
+        "ic95": [
+          -0.8799894302004024,
+          0.4954970681397074
+        ],
+        "p_value": 0.25227692531183266,
+        "patients_ameliores": 26,
+        "n": 45
+      },
+      {
+        "groupe": "+ modulateurs",
+        "gain": 0.2073187616803931,
+        "ic95": [
+          -0.1048730234911937,
+          0.5195105468519798
+        ],
+        "p_value": 0.34071305469274193,
+        "patients_ameliores": 25,
+        "n": 45
+      }
+    ],
+    "total": {
+      "gain": 1.673146594390133,
+      "ic95": [
+        0.6104706103870261,
+        2.7358225783932397
+      ],
+      "p_value": 0.00134285350219443,
+      "patients_ameliores": 33,
+      "n": 45
+    }
+  },
+  "120": {
+    "bras": {
+      "historique": {
+        "n_patients": 45,
+        "mae_model": 30.65276253055171,
+        "mae_persistence": 28.013467525496516,
+        "gain_mae": -2.6392950050551987,
+        "ic95_gain": [
+          -6.532235888892936,
+          1.2536458787825384
+        ],
+        "p_value": 0.7713255738535167,
+        "patients_gagnes": 26,
+        "couverture": 0.891608110086371,
+        "largeur_intervalle": 130.84821602737327,
+        "sens_hyper": 0.2051264980026631,
+        "n_features": 11,
+        "n_concepts": 0
+      },
+      "+ repas": {
+        "n_patients": 45,
+        "mae_model": 28.911032275712365,
+        "mae_persistence": 28.013467525496516,
+        "gain_mae": -0.8975647502158602,
+        "ic95_gain": [
+          -4.791363138618623,
+          2.996233638186902
+        ],
+        "p_value": 0.34071305469274193,
+        "patients_gagnes": 25,
+        "couverture": 0.8889425657541599,
+        "largeur_intervalle": 123.14804590625539,
+        "sens_hyper": 0.23675099866844207,
+        "n_features": 13,
+        "n_concepts": 2
+      },
+      "+ activite": {
+        "n_patients": 45,
+        "mae_model": 28.80192499179939,
+        "mae_persistence": 28.013467525496516,
+        "gain_mae": -0.7884574663028698,
+        "ic95_gain": [
+          -5.090605528529123,
+          3.5136905959233835
+        ],
+        "p_value": 0.14342769278198375,
+        "patients_gagnes": 28,
+        "couverture": 0.887781193578295,
+        "largeur_intervalle": 122.55167660231531,
+        "sens_hyper": 0.2381491344873502,
+        "n_features": 19,
+        "n_concepts": 8
+      },
+      "+ modulateurs": {
+        "n_patients": 45,
+        "mae_model": 28.730502221356947,
+        "mae_persistence": 28.013467525496516,
+        "gain_mae": -0.7170346958604322,
+        "ic95_gain": [
+          -4.808719246375709,
+          3.3746498546548445
+        ],
+        "p_value": 0.15303083127372474,
+        "patients_gagnes": 28,
+        "couverture": 0.8852913189869712,
+        "largeur_intervalle": 121.22171424378507,
+        "sens_hyper": 0.24267643142476697,
+        "n_features": 24,
+        "n_concepts": 13
+      }
+    },
+    "pas_a_pas": [
+      {
+        "groupe": "+ repas",
+        "gain": 1.7417302548393379,
+        "ic95": [
+          0.8985579096422672,
+          2.5849026000364086
+        ],
+        "p_value": 4.846123255219936e-05,
+        "patients_ameliores": 36,
+        "n": 45
+      },
+      {
+        "groupe": "+ activite",
+        "gain": 0.10910728391299046,
+        "ic95": [
+          -0.7265981574204696,
+          0.9448127252464504
+        ],
+        "p_value": 0.025164878425982806,
+        "patients_ameliores": 31,
+        "n": 45
+      },
+      {
+        "groupe": "+ modulateurs",
+        "gain": 0.07142277044243796,
+        "ic95": [
+          -0.7288775579907107,
+          0.8717230988755866
+        ],
+        "p_value": 0.3945682829952375,
+        "patients_ameliores": 16,
+        "n": 45
+      }
+    ],
+    "total": {
+      "gain": 1.9222603091947665,
+      "ic95": [
+        0.6075243039065152,
+        3.236996314483018
+      ],
+      "p_value": 0.000317785723268571,
+      "patients_ameliores": 35,
+      "n": 45
+    }
+  }
+}

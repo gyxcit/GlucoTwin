@@ -315,6 +315,72 @@ La distinction n'est pas cosmétique : ce sont deux usages différents du même 
 
 ---
 
+## 5 quinquies. Ablation : la couche 1 sert — mais une seule de ses branches
+
+C'est la question la plus embarrassante qu'on puisse poser à une architecture à
+goulot conceptuel. Le modèle reçoit déjà l'historique glycémique du patient : ses
+vingt dernières minutes, sa vitesse, son accélération. Si cet historique suffit,
+toute la physiologie est un ornement coûteux.
+
+**L'ablation du dépôt était circulaire** : sur cohorte synthétique, la glycémie
+est engendrée *à partir des concepts fournis au modèle*, donc ils devaient aider
+par construction. Sur données réelles, la circularité disparaît.
+
+### La couche 1 apporte, à tous les horizons
+
+| horizon | historique seul | couche 1 complète | gain | p |
+|---:|---:|---:|---:|---:|
+| 30 min | 13,08 | **12,33** | +0,75 | <0,001 |
+| 60 min | 21,66 | **20,66** | +1,00 | <0,001 |
+| 90 min | 26,99 | **25,32** | +1,67 | 0,001 |
+| 120 min | 30,65 | **28,73** | +1,92 | <0,001 |
+
+Significatif partout, et le gain **croît avec l'horizon** — physiologiquement
+cohérent : plus on regarde loin, moins l'historique récent suffit.
+
+### Mais une seule branche porte le résultat
+
+Chaque groupe est comparé au précédent, par test apparié patient par patient :
+
+| horizon | + repas | + activité | + modulateurs |
+|---:|---:|---:|---:|
+| 30 min | **+0,68** (p<0,001) | +0,08 (p=0,07) | −0,01 (p=0,62) |
+| 60 min | **+0,93** (p<0,001) | +0,19 (p=0,31) | −0,12 (p=0,41) |
+| 90 min | **+1,66** (p<0,001) | −0,19 (p=0,25) | +0,21 (p=0,34) |
+| 120 min | **+1,74** (p<0,001) | +0,11 (p=0,03) | +0,07 (p=0,40) |
+
+**Les repas portent 91 à 99 % du gain total.** Deux concepts — glucides en
+digestion et débit d'apparition — font tout le travail. L'activité n'atteint le
+seuil qu'à 120 minutes, et pour +0,11 mg/dL. Les modulateurs (circadien,
+sensibilité insulinique, phénomène de l'aube, production hépatique, flux net)
+**n'apportent rien de mesurable à aucun horizon**.
+
+### Ce qu'il faut en conclure, sans le surinterpréter
+
+Cela **ne rend pas la couche 1 inutile**, et cela ne dit pas que le rythme
+circadien n'existe pas. Trois lectures sont compatibles avec ces chiffres, et il
+faut les tenir ensemble :
+
+1. **Ce que les modulateurs encodent, l'historique glycémique le contient déjà.**
+   L'heure du jour est fournie séparément au modèle (sin/cos), et la sensibilité
+   insulinique se lit dans la dynamique récente. Le concept est explicatif, pas
+   informatif *en plus*.
+2. **Le journal de repas est déclaratif, l'activité est mesurée.** Paradoxalement,
+   c'est la branche la moins bien mesurée qui aide le plus — parce qu'un repas
+   est un événement ponctuel et massif, alors que l'activité de ces participants
+   est modeste (12,9 % des minutes au-dessus de 3 MET).
+3. **La cohorte est peu active.** Sur des sportifs ou des travailleurs manuels,
+   la branche activité pèserait probablement davantage. C'est une limite de
+   CGMacros, pas une réfutation de la physiologie.
+
+Pour la présentation, la formulation honnête est : *le goulot conceptuel se
+justifie par ce qu'il rend explicable et simulable, et il apporte aussi un gain
+de précision réel mais modeste — porté presque entièrement par la branche
+alimentaire.* Vendre les quatorze concepts comme également utiles serait faux, et
+c'est vérifiable en une commande.
+
+---
+
 ## 6. Trois pièges rencontrés dans les données
 
 ### `bio.csv` est en unités impériales
