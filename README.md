@@ -162,14 +162,23 @@ Gain **+12,64 mg/dL** [IC95 +8,3, +17,0], p = 1,1e-09, 40 patients sur 44. Et un
 facteur **dix** sur la sensibilité à la charge glucidique entre le 10ᵉ et le 90ᵉ
 centile : *le patient moyen n'existe pas*.
 
-Deux réserves, mesurées et documentées. **61 % des patients ont un paramètre
-collé à une borne** — production hépatique, captation et glycémie d'équilibre
-agissent toutes trois sur le niveau de base, seul leur flux net est identifié ;
-la suite est de reparamétrer, pas de calibrer davantage. Et **la calibration
-n'améliore pas la prévision** : branchée sur la couche 2, elle ne produit aucun
-écart significatif (p ≥ 0,11). Le modèle appris reconstruit déjà, depuis
-l'historique glycémique, ce que les gains patient encodent. Elle reste utile là
-où elle est validée — le modèle **direct**, donc les scénarios « et si ? ».
+Le modèle à cinq paramètres généralisait mais ne s'identifiait pas : 61 % des
+patients avaient un gain collé à une borne. **Reparamétré à quatre paramètres**
+— bilan basal absorbé dans la glycémie d'équilibre — il garde la même précision
+(27,31 contre 27,33) et fait passer la proportion de patients sans aucun
+paramètre saturé de **11 % à 57 %**.
+
+Et il devient **falsifiable** : la glycémie d'équilibre ajustée corrèle à
+**r = 0,82** (p = 1,3e-11) avec la **glycémie à jeun mesurée au laboratoire**,
+que la calibration n'a jamais vue — contre r = 0,30 pour la version à cinq
+paramètres. Le paramètre n'absorbe pas du bruit : il estime une grandeur
+biologique, à partir du seul CGM.
+
+Une réserve demeure : **la calibration n'améliore pas la prévision**. Branchée
+sur la couche 2, elle ne produit aucun écart significatif (p ≥ 0,11) — le modèle
+appris reconstruit déjà, depuis l'historique glycémique, ce que les gains patient
+encodent. Elle est utile là où elle est validée : le modèle **direct**, donc les
+scénarios « et si ? » et l'estimation de paramètres physiologiques.
 
 ### Sur cohorte synthétique
 
@@ -289,7 +298,7 @@ Trois pièges rencontrés dans CGMacros, tous silencieux et tous traités dans l
 - [x] Couche 3 : probabilités calibrées de risque
 - [x] **Calibration de la couche 1 par patient** (problème inverse) — +12,64 mg/dL sur le modèle direct, sans effet sur la prévision
 - [x] **Ablation sur données réelles** — les repas portent 91 à 99 % du gain
-- [ ] Reparamétrer les branches basales (flux net unique) pour rendre les paramètres identifiables
+- [x] **Reparamétrisation des branches basales** — saturation 11 % → 57 %, et la glycémie d'équilibre corrèle à r = 0,82 avec le laboratoire
 - [ ] Couche 4 : recommandations avec catalogue fermé et validateur
 - [ ] Validation externe sur un second jeu de données
 

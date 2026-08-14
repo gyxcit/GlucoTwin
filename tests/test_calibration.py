@@ -244,3 +244,86 @@ def test_les_journees_d_observation_sont_coupees():
     cal = apply_calibration(df, {}, days_from=3)
     assert cal["day"].min() == 3
     assert set(cal["day"].unique()) == {3, 4, 5}
+
+
+# --------------------------------------------------------------------------- #
+# 5. Le modèle réduit — la reparamétrisation
+# --------------------------------------------------------------------------- #
+
+def _journee_reduite(seed=0, n=289):
+    """Branches du modèle réduit : apparition alimentaire et effort."""
+    ra, _, rd = _journee(seed=seed)
+    ex = np.maximum(0.0, rd - 180.0)          # la part au-dessus du repos
+    return ra, ex
+
+
+def test_le_modele_reduit_retrouve_ses_parametres():
+    """Identifiabilité — la raison d'être de la reparamétrisation."""
+    from glucotwin.calibration import fit_patient_reduced, simulate_glucose_reduced
+
+    theta_vrai = np.array([1.25, 1.40, 0.028, 122.0])
+    weight = 84.0
+    days = []
+    for d in range(4):
+        ra, ex = _journee_reduite(seed=d)
+        g = simulate_glucose_reduced(theta_vrai, ra, ex, weight, g0=122.0)
+        days.append((ra, ex, g))
+    theta, rmse, ok = fit_patient_reduced(days, weight)
+    assert ok and rmse < 1.0
+    from glucotwin.calibration import REDUCED_PARAM_NAMES
+    for nom, vrai, est in zip(REDUCED_PARAM_NAMES, theta_vrai, theta):
+        assert abs(est - vrai) / abs(vrai) < 0.12, f"{nom}: {est:.3f} vs {vrai:.3f}"
+
+
+def test_le_modele_reduit_sature_moins_que_le_complet():
+    """Le point de tout l'exercice : moins de paramètres collés aux bornes.
+
+    On ajuste les deux modèles sur les mêmes données bruitées et on compte les
+    saturations. Le modèle complet a trois paramètres qui se disputent le niveau
+    de base ; le réduit n'en a qu'un.
+    """
+    import pandas as pd
+    from glucotwin.calibration import (BOUNDS, PARAM_NAMES, REDUCED_BOUNDS,
+                                       REDUCED_PARAM_NAMES, saturation_rate)
+
+    df, _ = _cohorte_synthetique(n_patients=10, n_days=6, seed=21, bruit=8.0)
+    df["dawn_factor"] = 0.0
+    complet = calibrate_cohort(df, n_days_fit=3, model="full", verbose=False)
+    reduit = calibrate_cohort(df, n_days_fit=3, model="reduced", verbose=False)
+
+    s_c = saturation_rate([r.theta for r in complet], BOUNDS, PARAM_NAMES)
+    s_r = saturation_rate([r.theta for r in reduit], REDUCED_BOUNDS, REDUCED_PARAM_NAMES)
+    assert s_r["_aucun_sature"] >= s_c["_aucun_sature"]
+
+
+def test_la_captation_a_l_effort_est_bien_separee():
+    """L'exercice est reconstruit exactement — c'est l'inverse d'une addition."""
+    from glucotwin.calibration import exercise_uptake_from_concepts
+    from glucotwin.day_concepts import (DAWN_DISPOSAL_DROP,
+                                        HEPATIC_BASAL_MG_KG_MIN)
+
+    w = 80.0
+    basal = HEPATIC_BASAL_MG_KG_MIN * w
+    ex_vrai = np.array([0.0, 120.0, 400.0])
+    uptake = basal + ex_vrai
+    ex = exercise_uptake_from_concepts(uptake, np.zeros(3), w)
+    assert np.allclose(ex, ex_vrai)
+    # avec l'aube, la basale baisse : la reconstruction doit en tenir compte
+    ex_aube = exercise_uptake_from_concepts(
+        basal * (1 - DAWN_DISPOSAL_DROP) + ex_vrai, np.ones(3), w)
+    assert np.allclose(ex_aube, ex_vrai)
+
+
+def test_la_captation_ne_devient_jamais_negative():
+    from glucotwin.calibration import exercise_uptake_from_concepts
+    ex = exercise_uptake_from_concepts(np.array([10.0, 50.0]), np.zeros(2), 90.0)
+    assert np.all(ex >= 0.0)
+
+
+def test_le_taux_de_saturation_compte_juste():
+    from glucotwin.calibration import REDUCED_BOUNDS, REDUCED_PARAM_NAMES, saturation_rate
+    lo = [REDUCED_BOUNDS[n][0] for n in REDUCED_PARAM_NAMES]
+    milieu = [(REDUCED_BOUNDS[n][0] + REDUCED_BOUNDS[n][1]) / 2 for n in REDUCED_PARAM_NAMES]
+    s = saturation_rate([lo, milieu], REDUCED_BOUNDS, REDUCED_PARAM_NAMES)
+    assert s["gain_ra"] == pytest.approx(0.5)
+    assert s["_aucun_sature"] == pytest.approx(0.5)

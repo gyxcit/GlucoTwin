@@ -381,6 +381,69 @@ c'est vérifiable en une commande.
 
 ---
 
+## 5 sexies. Reparamétrisation : le paramètre devient une mesure
+
+La section 5 ter laissait une limite ouverte : le modèle à cinq paramètres
+généralise, mais **ne s'identifie pas** — 61 % des patients avaient le gain
+hépatique collé à une borne, et seuls 5 sur 44 n'avaient aucun paramètre saturé.
+La cause était structurelle : production hépatique, captation basale et glycémie
+d'équilibre agissent toutes trois sur le même niveau, dont une seule résultante
+est observable.
+
+**La correction n'est pas de mieux optimiser, c'est de reparamétrer.** On absorbe
+le bilan basal dans la glycémie d'équilibre — qui est justement ce qu'il
+détermine — et il reste quatre paramètres dont chacun se lit sur une portion
+différente de la courbe :
+
+    dG/dt = [ gᵣ·Ra − g_e·Exercice ] / V − k·(G − G_b)
+
+`G_b` est le plateau nocturne, `k` la vitesse de redescente après un repas, `gᵣ`
+l'amplitude des excursions, `g_e` le creux à l'effort. Aucun ne peut compenser un
+autre.
+
+### Le résultat : autant de précision, cinq fois moins de saturation
+
+| | 5 paramètres | 4 paramètres |
+|---|---:|---:|
+| RMSE sur journées de test | 27,33 | **27,31** |
+| gain sur les paramètres de population | +12,64 | +10,25 |
+| gain hépatique saturé | 61,4 % | — |
+| **patients sans aucun paramètre saturé** | **11,4 %** | **56,8 %** |
+
+On ne perd rien en précision (−0,03 mg/dL, le réduit gagne même de peu) et on
+multiplie par cinq la proportion de patients dont tous les paramètres sont
+contraints par les données.
+
+### La validation qui change la nature du résultat
+
+Un paramètre ajusté peut toujours être un facteur d'absorption déguisé. Il n'y a
+qu'une façon de trancher : le confronter à une mesure qu'il **n'a jamais vue**.
+`bio.csv` contient la **glycémie à jeun mesurée au laboratoire** des 45
+participants — jamais utilisée par la calibration, qui ne voit que le CGM.
+
+| modèle | corrélation de `G_b` avec le laboratoire | p |
+|---|---:|---:|
+| 5 paramètres | Pearson +0,302 · Spearman +0,254 | 0,046 |
+| **4 paramètres** | **Pearson +0,817 · Spearman +0,798** | **1,3e-11** |
+
+Dans le modèle complet, `G_b` était largement un paramètre d'ajustement — il
+corrélait à peine avec la réalité. Dans le modèle réduit, il **estime la glycémie
+à jeun** du patient, avec r = 0,82 contre une mesure de laboratoire indépendante.
+
+C'est le résultat qui justifie tout l'exercice du problème inverse : *on n'a pas
+besoin de mesurer le mécanisme si on observe son effet*. Ici, l'observation du
+CGM seul restitue une grandeur biologique qu'on mesure d'ordinaire par prise de
+sang.
+
+**Un biais subsiste, +14,8 mg/dL** : l'équilibre ajusté est systématiquement plus
+haut que la valeur du laboratoire. C'est attendu — l'« équilibre » du modèle est
+l'attracteur d'une journée entière, périodes post-prandiales comprises, alors que
+la glycémie à jeun se mesure après une nuit de jeûne. La corrélation porte le
+résultat ; le décalage absolu demanderait un terme de correction qui n'a pas été
+ajouté, pour ne pas ajuster deux fois la même chose.
+
+---
+
 ## 6. Trois pièges rencontrés dans les données
 
 ### `bio.csv` est en unités impériales

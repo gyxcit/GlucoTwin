@@ -1,0 +1,59 @@
+# Run de reference — reparametrisation des branches basales
+# commande : python scripts/run_reparam.py --cgmacros data/CGMacros --days-fit 3
+# commit : b62a8c8  date : 2026-08-14T14:38:37Z
+# ================================================================
+
+======================================================================
+REPARAMETRISATION — 5 parametres contre 4
+114,155 pas | 45 patients | 3 journees d'ajustement
+======================================================================
+
+MODELE COMPLET (5 parametres)
+----------------------------------------------------------------------
+  Patients                      44
+  RMSE test (calibre)           27.33 mg/dL
+  RMSE test (population)        39.97 mg/dL
+  RMSE test (persistance)       35.95 mg/dL
+  Gain de la calibration        +12.64 mg/dL (p=1.1e-09, 40/44)
+  Saturation aux bornes :
+    gain_ra       18.2 %
+    gain_hgp      61.4 %
+    gain_rd       31.8 %
+    k             11.4 %
+    g_base         9.1 %
+    AUCUN sature  11.4 % des patients
+
+MODELE REDUIT (4 parametres)
+----------------------------------------------------------------------
+  Patients                      44
+  RMSE test (calibre)           27.31 mg/dL
+  RMSE test (population)        37.55 mg/dL
+  RMSE test (persistance)       35.95 mg/dL
+  Gain de la calibration        +10.25 mg/dL (p=1.6e-08, 38/44)
+  Saturation aux bornes :
+    gain_ra       25.0 %
+    gain_ex       20.5 %
+    k             15.9 %
+    g_base         0.0 %
+    AUCUN sature  56.8 % des patients
+
+======================================================================
+COMPARAISON
+======================================================================
+  Precision sur les journees de test   -0.03 mg/dL (le reduit gagne)
+  Patients sans aucun parametre sature 11 % -> 57 %  (+45 points)
+
+======================================================================
+VALIDATION EXTERNE — la glycemie d'equilibre ajustee
+contre la GLYCEMIE A JEUN MESUREE AU LABORATOIRE
+======================================================================
+  modele complet  n= 44  Pearson r=+0.302 (p=4.6e-02)  Spearman rho=+0.254 (p=9.6e-02)  ecart moyen +8.0 mg/dL
+  modele reduit   n= 44  Pearson r=+0.817 (p=1.3e-11)  Spearman rho=+0.798 (p=8.6e-11)  ecart moyen +14.8 mg/dL
+
+  Le parametre ajuste correle avec une mesure de laboratoire
+  qu'il n'a jamais vue. Ce n'est pas un facteur d'ajustement :
+  il estime une grandeur physiologique reelle.
+
+Resultats ecrits dans results/reparametrisation.json
+
+# code retour : 0

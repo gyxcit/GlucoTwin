@@ -70,6 +70,136 @@ PARAM_NAMES = list(BOUNDS)
 DEFAULT_THETA = np.array([1.0, 1.0, 1.0, 0.02, 110.0])
 
 
+# --------------------------------------------------------------------------- #
+# Le modèle RÉDUIT — quatre paramètres, tous identifiables
+# --------------------------------------------------------------------------- #
+#
+# Le modèle à cinq paramètres a un défaut mesuré : sur CGMacros, **61 % des
+# patients** ont un gain collé à une borne, et seuls 5 sur 44 n'en ont aucun de
+# saturé. La cause est structurelle, pas numérique — production hépatique,
+# captation basale et glycémie d'équilibre agissent **toutes trois sur le même
+# niveau**, et une seule chose est observable : leur résultante. À l'équilibre,
+#
+#     0 = (g_h·HGP − g_u·Rd_basal)/V − k·(G − G_b)
+#
+# n'a qu'une inconnue effective. Trois paramètres pour un degré de liberté :
+# l'ajustement les fait glisser jusqu'aux murs sans que la trajectoire change.
+#
+# La correction n'est pas de mieux optimiser, c'est de **reparamétrer**. On
+# absorbe le bilan basal dans la glycémie d'équilibre — qui est justement ce
+# qu'il détermine — et il ne reste que des grandeurs à signature distincte :
+#
+#     dG/dt = [ gᵣ·Ra − g_e·Exercice ] / V − k·(G − G_b)
+#
+# - `G_b` — le plateau entre les repas, la nuit
+# - `k`   — la vitesse de redescente après un repas
+# - `gᵣ`  — l'amplitude des excursions post-prandiales
+# - `g_e` — le creux pendant l'effort
+#
+# Chacun se lit sur une portion différente de la courbe : aucun ne peut
+# compenser un autre. Et `G_b` devient une quantité **mesurable par ailleurs**
+# — la glycémie à jeun — donc falsifiable contre le laboratoire.
+
+REDUCED_BOUNDS = {
+    "gain_ra": (0.20, 3.00),      # amplitude des excursions post-prandiales
+    "gain_ex": (0.00, 3.00),      # profondeur du creux a l'effort
+    "k":       (0.002, 0.100),    # vitesse de retour a l'equilibre
+    "g_base":  (60.0, 260.0),     # glycemie d'equilibre = glycemie a jeun
+}
+REDUCED_PARAM_NAMES = list(REDUCED_BOUNDS)
+REDUCED_DEFAULT = np.array([1.0, 1.0, 0.02, 110.0])
+
+
+def exercise_uptake_from_concepts(uptake_mg_min, dawn_factor, weight_kg):
+    """Sépare la captation à l'effort de la captation basale.
+
+    La couche 1 les additionne dans un seul concept ; ici on refait la
+    soustraction exacte, avec la même constante et la même correction de l'aube
+    que `day_concepts`. Ce n'est pas une approximation : c'est l'inverse de
+    l'addition qui les a réunies.
+    """
+    from .day_concepts import DAWN_DISPOSAL_DROP, HEPATIC_BASAL_MG_KG_MIN
+
+    uptake = np.asarray(uptake_mg_min, dtype=float)
+    dawn = np.asarray(dawn_factor, dtype=float)
+    basal = HEPATIC_BASAL_MG_KG_MIN * weight_kg * (1.0 - DAWN_DISPOSAL_DROP * dawn)
+    return np.maximum(0.0, uptake - basal)
+
+
+def simulate_glucose_reduced(theta, ra, exercise, weight_kg, g0, step_min=5.0):
+    """Le modèle réduit : quatre paramètres, un compartiment."""
+    gain_ra, gain_ex, k, g_base = theta
+    v_dl = GLUCOSE_SPACE_DL_PER_KG * weight_kg
+    n = len(ra)
+    g = np.empty(n)
+    g[0] = g0
+    for i in range(1, n):
+        flux = gain_ra * ra[i - 1] - gain_ex * exercise[i - 1]
+        dg = flux / v_dl - k * (g[i - 1] - g_base)
+        g[i] = g[i - 1] + dg * step_min
+        if g[i] < 20.0:
+            g[i] = 20.0
+        elif g[i] > 600.0:
+            g[i] = 600.0
+    return g
+
+
+def _day_arrays_reduced(block, weight_kg, step_min=5):
+    ra = block["carb_ra_g_min"].to_numpy(float) * 1000.0
+    ex = exercise_uptake_from_concepts(
+        block["glucose_uptake_mg_min"].to_numpy(float),
+        block["dawn_factor"].to_numpy(float) if "dawn_factor" in block
+        else np.zeros(len(block)),
+        weight_kg)
+    g = block["glucose"].to_numpy(float)
+    return ra, ex, g
+
+
+def _residuals_reduced(theta, days, weight_kg, step_min=5):
+    out = []
+    for ra, ex, g in days:
+        out.append(simulate_glucose_reduced(theta, ra, ex, weight_kg, g[0], step_min) - g)
+    return np.concatenate(out)
+
+
+def _rmse_reduced(theta, days, weight_kg, step_min=5) -> float:
+    return float(np.sqrt(np.mean(_residuals_reduced(theta, days, weight_kg, step_min) ** 2)))
+
+
+def fit_patient_reduced(days, weight_kg, *, step_min=5, theta0=None, max_nfev=200):
+    """Ajuste les quatre paramètres du modèle réduit."""
+    theta0 = REDUCED_DEFAULT.copy() if theta0 is None else np.asarray(theta0, float)
+    lo = np.array([REDUCED_BOUNDS[n][0] for n in REDUCED_PARAM_NAMES])
+    hi = np.array([REDUCED_BOUNDS[n][1] for n in REDUCED_PARAM_NAMES])
+    theta0 = np.clip(theta0, lo, hi)
+    from scipy.optimize import least_squares
+    res = least_squares(_residuals_reduced, theta0, bounds=(lo, hi),
+                        max_nfev=max_nfev, args=(days, weight_kg, step_min),
+                        xtol=1e-8, ftol=1e-8)
+    theta = np.clip(res.x, lo, hi)
+    return theta, _rmse_reduced(theta, days, weight_kg, step_min), bool(res.success)
+
+
+def saturation_rate(thetas, bounds, names, tol=1e-6) -> dict:
+    """Part des patients dont chaque paramètre bute sur une borne.
+
+    C'est le diagnostic d'identifiabilité le plus direct : un paramètre qui
+    sature est un paramètre que les données ne contraignent pas.
+    """
+    th = np.atleast_2d(np.asarray(thetas, dtype=float))
+    out = {}
+    for j, n in enumerate(names):
+        lo, hi = bounds[n]
+        v = th[:, j]
+        out[n] = float(((np.abs(v - lo) < tol) | (np.abs(v - hi) < tol)).mean())
+    aucun = np.ones(len(th), dtype=bool)
+    for j, n in enumerate(names):
+        lo, hi = bounds[n]
+        aucun &= ~((np.abs(th[:, j] - lo) < tol) | (np.abs(th[:, j] - hi) < tol))
+    out["_aucun_sature"] = float(aucun.mean())
+    return out
+
+
 @dataclass
 class CalibrationResult:
     """Ce qu'on a appris d'un patient, et ce que ça vaut."""
@@ -100,7 +230,8 @@ class CalibrationResult:
              "rmse_test_persistance": self.rmse_test_persistance,
              "gain_vs_population": self.gain_vs_population,
              "converged": self.converged}
-        d.update({n: float(v) for n, v in zip(PARAM_NAMES, self.theta)})
+        noms = REDUCED_PARAM_NAMES if len(self.theta) == 4 else PARAM_NAMES
+        d.update({n: float(v) for n, v in zip(noms, self.theta)})
         return d
 
 
@@ -225,15 +356,24 @@ def calibrate_cohort(
     min_days: int = 5,
     step_min: int = 5,
     theta_population=None,
+    model: str = "full",
     verbose: bool = True,
 ):
     """Calibre chaque patient sur ses premières journées, teste sur les suivantes.
+
+    `model="full"` : cinq paramètres, trois gains de branche (la version
+    d'origine). `model="reduced"` : quatre paramètres, bilan basal absorbé dans
+    la glycémie d'équilibre — voir le commentaire en tête de section.
 
     Le découpage est **temporel et par patient** : aucune journée de test n'a
     servi à l'ajustement, et aucun patient n'emprunte quoi que ce soit à un
     autre — sauf les paramètres de population, qui servent de point de
     comparaison et sont estimés **sans** le patient évalué.
     """
+    reduced = model == "reduced"
+    names = REDUCED_PARAM_NAMES if reduced else PARAM_NAMES
+    default = REDUCED_DEFAULT if reduced else DEFAULT_THETA
+
     results = []
     patients = list(dict.fromkeys(df["patient"]))
 
@@ -244,25 +384,35 @@ def calibrate_cohort(
             continue
         weight = float(sub["weight_kg"].iloc[0])
 
-        fit_days = [_day_arrays(sub[sub["day"] == d], step_min)
-                    for d in days[:n_days_fit]]
-        test_days = [_day_arrays(sub[sub["day"] == d], step_min)
-                     for d in days[n_days_fit:]]
+        def _arrays(d):
+            block = sub[sub["day"] == d]
+            return (_day_arrays_reduced(block, weight, step_min) if reduced
+                    else _day_arrays(block, step_min))
+
+        fit_days = [_arrays(d) for d in days[:n_days_fit]]
+        test_days = [_arrays(d) for d in days[n_days_fit:]]
         if not test_days:
             continue
 
-        theta, rmse_fit, ok = fit_patient(fit_days, weight, step_min=step_min)
+        if reduced:
+            theta, rmse_fit, ok = fit_patient_reduced(fit_days, weight, step_min=step_min)
+            rmse_test = _rmse_reduced(theta, test_days, weight, step_min)
+        else:
+            theta, rmse_fit, ok = fit_patient(fit_days, weight, step_min=step_min)
+            rmse_test = _rmse(theta, test_days, weight, step_min)
+
+        pers = float(np.sqrt(np.mean(np.concatenate(
+            [np.full(len(d[-1]), d[-1][0]) - d[-1] for d in test_days]) ** 2)))
+
         r = CalibrationResult(
             patient=str(pid), theta=theta,
             n_days_fit=len(fit_days), n_days_test=len(test_days),
-            rmse_fit=rmse_fit,
-            rmse_test=_rmse(theta, test_days, weight, step_min),
-            rmse_test_persistance=_rmse_persistence(test_days),
-            converged=ok,
+            rmse_fit=rmse_fit, rmse_test=rmse_test,
+            rmse_test_persistance=pers, converged=ok,
         )
         results.append((r, test_days, weight))
         if verbose:
-            print(f"  {pid}: rmse ajust. {rmse_fit:5.1f} | test {r.rmse_test:5.1f} "
+            print(f"  {pid}: rmse ajust. {rmse_fit:5.1f} | test {rmse_test:5.1f} "
                   f"| theta " + " ".join(f"{v:.3f}" for v in theta), flush=True)
 
     # Paramètres de population : médiane des autres patients (jamais le patient
@@ -275,8 +425,10 @@ def calibrate_cohort(
             theta_pop = np.asarray(theta_population, float)
         else:
             others = np.delete(thetas, i, axis=0)
-            theta_pop = np.median(others, axis=0) if len(others) else DEFAULT_THETA
-        r.rmse_test_population = _rmse(theta_pop, test_days, weight, step_min)
+            theta_pop = np.median(others, axis=0) if len(others) else default
+        r.rmse_test_population = (_rmse_reduced(theta_pop, test_days, weight, step_min)
+                                  if reduced
+                                  else _rmse(theta_pop, test_days, weight, step_min))
         out.append(r)
     return out
 
@@ -307,7 +459,8 @@ def summarize(results) -> dict:
         "patients_ameliores": int((d > 0).sum()),
         "bat_la_persistance": int((test < pers).sum()),
         "theta_median": {n_: float(v) for n_, v in zip(
-            PARAM_NAMES, np.median([r.theta for r in results], axis=0))},
+            (REDUCED_PARAM_NAMES if len(results[0].theta) == 4 else PARAM_NAMES),
+            np.median([r.theta for r in results], axis=0))},
     }
 
 

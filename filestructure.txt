@@ -30169,6 +30169,7 @@
     |-- couche3_reel_hypo.json
     |-- couche3_synthetique.json
     |-- README.md
+    |-- reparametrisation.json
 |-- scripts
     |-- build_deck.js
     |-- inspect_cgmacros.py
@@ -30177,6 +30178,7 @@
     |-- run_calibration.py
     |-- run_cgmacros.py
     |-- run_layer2.py
+    |-- run_reparam.py
     |-- run_risk.py
     |-- sensitivity.py
 |-- src
@@ -30210,6 +30212,4 @@
     |-- test_fairness.py
     |-- test_layer2.py
     |-- test_metabolic.py
-    |-- test_risk.py
-tabolic.py
     |-- test_risk.py
