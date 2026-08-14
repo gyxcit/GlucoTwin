@@ -69,6 +69,8 @@ python scripts/sensitivity.py
 # Une expérience sur données réelles (après téléchargement de CGMacros)
 python scripts/inspect_cgmacros.py data/CGMacros          # 7 contrôles de recevabilité
 python scripts/run_cgmacros.py data/CGMacros --horizons 30 60 90 120
+python scripts/run_ablation.py data/CGMacros                # la couche 1 sert-elle ?
+python scripts/run_calibration.py --cgmacros data/CGMacros  # le probleme inverse
 
 # La même chose sur cohorte synthétique, sans aucune donnée à télécharger
 python scripts/run_layer2.py --patients 30 --days 6 --horizons 30 60 90 120 --models hgb
@@ -97,7 +99,7 @@ dépend d'aucun modèle : c'est une propriété des données seules. Nos 13,41 m
 tombent à **0,02 mg/dL** du repère publié sur CGMacros (13,39). Le modèle de
 référence publié fait 13,11 ; le nôtre 12,33.
 
-### Trois résultats qui contredisent l'intuition
+### Cinq résultats qui contredisent l'intuition
 
 **1. Le gain disparaît au-delà de 30 minutes.** Sur cohorte synthétique il
 *triplait* avec l'horizon (+2,06 → +5,72 mg/dL). Sur données réelles il devient
@@ -125,6 +127,17 @@ classe les hypoglycémies avec une AUROC de 0,752 et une précision moyenne
 climatologie à *tous* les horizons, jusqu'à deux heures. La limite est nette :
 au-delà de 30 min, l'hypoglycémie redevient impossible à classer (AUROC 0,53).
 
+**5. L'architecture apporte — mais une seule de ses branches.** L'ablation sur
+données réelles (celle du dépôt était circulaire : sur cohorte simulée, la
+glycémie est engendrée *à partir* des concepts) montre que la couche 1 bat
+l'historique glycémique seul à tous les horizons, avec un gain qui croît de
++0,75 à +1,92 mg/dL (p<0,001). Mais le découpage par groupe est sans appel : les
+**repas portent 91 à 99 % du gain**, l'activité n'atteint le seuil qu'à 120 min,
+et les modulateurs — circadien, sensibilité insulinique, phénomène de l'aube,
+production hépatique — **n'apportent rien de mesurable**. Le goulot conceptuel se
+justifie par ce qu'il rend explicable et simulable ; vendre les quatorze concepts
+comme également utiles serait faux.
+
 **La prédiction conforme, elle, tient** : couverture de 88,5 à 89,8 % pour 90 %
 visés, sur données réelles et sur les quatre horizons.
 
@@ -132,6 +145,31 @@ visés, sur données réelles et sur les quatre horizons.
 > **Sorties brutes des runs :** [`results/`](results/) — chaque chiffre cité est
 > régénérable par un script du dépôt, avec commande, commit et versions de
 > bibliothèques en en-tête de journal.
+
+### Personnalisation : le problème inverse
+
+Le VCO₂ n'est pas mesurable ; la glycémie l'est. On ajuste donc cinq paramètres
+physiologiques par patient sur ses **3 premières journées**, et on teste sur les
+suivantes :
+
+| | RMSE sur journées de test |
+|---|---:|
+| **calibré par patient** | **27,33 mg/dL** |
+| paramètres de population | 39,97 |
+| persistance | 35,95 |
+
+Gain **+12,64 mg/dL** [IC95 +8,3, +17,0], p = 1,1e-09, 40 patients sur 44. Et un
+facteur **dix** sur la sensibilité à la charge glucidique entre le 10ᵉ et le 90ᵉ
+centile : *le patient moyen n'existe pas*.
+
+Deux réserves, mesurées et documentées. **61 % des patients ont un paramètre
+collé à une borne** — production hépatique, captation et glycémie d'équilibre
+agissent toutes trois sur le niveau de base, seul leur flux net est identifié ;
+la suite est de reparamétrer, pas de calibrer davantage. Et **la calibration
+n'améliore pas la prévision** : branchée sur la couche 2, elle ne produit aucun
+écart significatif (p ≥ 0,11). Le modèle appris reconstruit déjà, depuis
+l'historique glycémique, ce que les gains patient encodent. Elle reste utile là
+où elle est validée — le modèle **direct**, donc les scénarios « et si ? ».
 
 ### Sur cohorte synthétique
 
@@ -222,7 +260,7 @@ results/     sorties brutes des runs de référence
 notebooks/   entraînement (Kaggle)
 demo/        applications web autonomes — atelier.html = la démo
 docs/        revue de littérature, état de l'art, architecture, plans
-tests/       73 tests
+tests/       85 tests
 ```
 
 ---
@@ -249,7 +287,9 @@ Trois pièges rencontrés dans CGMacros, tous silencieux et tous traités dans l
 - [x] **Adaptateur CGMacros** — 45 patients réels, pipeline validé contre le repère publié
 - [x] Analyse d'équité par sous-groupes, avec test de permutation
 - [x] Couche 3 : probabilités calibrées de risque
-- [ ] Calibration de la couche 1 par patient (problème inverse)
+- [x] **Calibration de la couche 1 par patient** (problème inverse) — +12,64 mg/dL sur le modèle direct, sans effet sur la prévision
+- [x] **Ablation sur données réelles** — les repas portent 91 à 99 % du gain
+- [ ] Reparamétrer les branches basales (flux net unique) pour rendre les paramètres identifiables
 - [ ] Couche 4 : recommandations avec catalogue fermé et validateur
 - [ ] Validation externe sur un second jeu de données
 
