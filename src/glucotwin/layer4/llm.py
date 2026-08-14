@@ -95,6 +95,37 @@ class FakeLLM:
         return str(self.reponse)
 
 
+class LLMScripte:
+    """Rejoue une suite de réponses fixées — pour tester une **boucle** d'agent.
+
+    `FakeLLM` renvoie toujours la même chose, ce qui ne permet pas de tester un
+    enchaînement (appeler un outil, lire l'observation, conclure). Ici chaque
+    appel consomme la réponse suivante ; une fois la liste épuisée, la dernière
+    est répétée — c'est ainsi qu'on fabrique un agent qui boucle sans fin.
+    """
+
+    def __init__(self, reponses, repeter_la_derniere: bool = True):
+        self.reponses = list(reponses)
+        self.repeter = repeter_la_derniere
+        self.appels = 0
+        self.prompts: list[str] = []
+
+    @property
+    def dernier_prompt(self) -> str | None:
+        return self.prompts[-1] if self.prompts else None
+
+    def completer(self, systeme: str, utilisateur: str) -> str:
+        self.prompts.append(utilisateur)
+        i = self.appels
+        self.appels += 1
+        if i >= len(self.reponses):
+            if not self.repeter or not self.reponses:
+                return ""
+            i = len(self.reponses) - 1
+        r = self.reponses[i]
+        return json.dumps(r, ensure_ascii=False) if isinstance(r, (dict, list)) else str(r)
+
+
 class MistralLLM:
     """Appel réel à l'API Mistral. Lit `MISTRAL_API_KEY` dans l'environnement.
 

@@ -475,6 +475,74 @@ sur le même capteur, sinon elle ne veut rien dire. À énoncer dans les limites
 
 ---
 
+## 6 ter. Couche 4 — ce qu'un agent apporte qu'un LLM n'apporte pas
+
+### Les chiffres du catalogue étaient posés à la main. Ils ne le sont plus.
+
+Le catalogue annonçait un effet en mg/dL pour chaque intervention. Ces valeurs
+avaient été écrites, pas calculées — exactement le défaut qu'on reproche à un
+modèle de langage. `scripts/etalonner_catalogue.py` les recalcule : chaque
+intervention est traduite en **modification de l'emploi du temps** (un tiers de
+glucides en moins, un index glycémique bas, une marche de 30 min après chaque
+repas), repassée par la couche 1, puis simulée par le modèle réduit.
+
+Le recalcul a corrigé quatre entrées sur sept, dont une de 18 mg/dL dans le
+mauvais sens : « fractionner le repas » valait -12 dans le catalogue écrit à la
+main, et vaut **-29,8** une fois mesuré. Un test compare désormais `catalogue.py`
+au recalcul et échoue au-delà de 0,1 mg/dL.
+
+### Effet de population contre effet personnel
+
+Le même code produit les deux colonnes ; **seul θ change**. L'écart est donc
+entièrement imputable à la calibration du patient.
+
+| Intervention | Population | Patient médian CGMacros | Écart |
+|---|---:|---:|---:|
+| Réduire la charge glucidique | -44,7 | -16,5 | +28,2 |
+| Fractionner le repas | -29,8 | -11,8 | +18,0 |
+| Index glycémique bas | -26,3 | -11,6 | +14,7 |
+| Fibres | -11,3 | -5,2 | +6,1 |
+| Marche post-repas | -10,0 | -3,8 | +6,2 |
+| Vélo en fin de journée | 0,0 | 0,0 | 0,0 |
+| Avancer le dîner | 0,0 | 0,0 | 0,0 |
+
+Effet moyen : **-17,4 mg/dL** en population contre **-7,0** chez le patient
+médian de la cohorte réelle. Annoncer le chiffre du catalogue à ce patient
+**surestimerait l'effet d'un facteur 2,5**. C'est la seule raison de donner des
+outils à l'agent plutôt qu'un résumé : il mesure au lieu de citer.
+
+### Deux interventions à effet nul, et on les garde ainsi
+
+Le vélo de fin de journée et l'avancement du dîner ne changent pas le pic. Le
+modèle réduit n'a **ni sensibilité à l'insuline prolongée après l'effort, ni
+dégradation de la tolérance au glucose en soirée** : il ne peut pas voir ces
+effets, que la littérature décrit pourtant. Les afficher à 0,0 est la lecture
+honnête — c'est une limite du modèle, pas un résultat clinique. Les masquer par
+une valeur plausible aurait été précisément la faute qu'on cherche à éviter.
+
+### Ce que la boucle ne change pas
+
+L'agent dispose de cinq outils en lecture seule, d'un budget de 8 étapes et d'un
+registre fermé : un nom d'outil inventé revient comme observation d'erreur, une
+intervention contre-indiquée est refusée par l'outil lui-même. Surtout, **sa
+réponse finale passe par le même validateur que la voie sans agent**. La
+propriété testée est inchangée : à état donné, l'ensemble des interventions
+affichables est le même avec agent, avec LLM simple, et sans modèle du tout.
+L'agent gagne un chiffre personnel, jamais un pouvoir supplémentaire.
+
+Trente tests hostiles couvrent la boucle : boucle infinie (budget épuisé →
+repli), outil inventé, arguments invalides, agent qui recommande ce qu'un outil
+vient de lui refuser, vocabulaire médical dans la réponse finale, API en panne.
+
+L'appel au modèle réel n'a pas pu tourner ici : `api.mistral.ai` est injoignable
+depuis le conteneur (HTTP 000). `results/logs/run_reco_agent.log` montre la
+trace avec un modèle **scripté** — ce qui suffit à démontrer le point, puisque
+la sûreté ne doit rien devoir à ce que le modèle répond. Pour un appel réel :
+`python scripts/run_reco.py --llm --agent`, dans un terminal avec réseau et
+`MISTRAL_API_KEY`.
+
+---
+
 ## 7. Limites
 
 - **Un seul jeu de données.** Aucune validation externe.
@@ -486,6 +554,9 @@ sur le même capteur, sinon elle ne veut rien dire. À énoncer dans les limites
   d'information.
 - **Journal de repas déclaratif**, avec les oublis et approximations habituels.
 - Le jeu n'est **pas redistribué** par ce dépôt (CC BY-NC-SA 4.0).
+- **Le modèle réduit ne voit ni l'effet différé de l'exercice, ni le rythme des
+  repas** : deux interventions du catalogue de la couche 4 en ressortent à effet
+  nul (§ 6 ter).
 
 ---
 
@@ -505,6 +576,10 @@ python scripts/run_risk.py --cgmacros data/CGMacros --event hyper \
     --horizons 30 60 90 120 --reliability --out results/couche3_reel_hyper.json
 python scripts/run_risk.py --cgmacros data/CGMacros --event hypo \
     --horizons 30 60 90 120 --reliability --out results/couche3_reel_hypo.json
+
+# 5. La couche 4 — etalonnage du catalogue, puis l agent (sans CGMacros)
+python scripts/etalonner_catalogue.py
+python scripts/run_reco.py --simuler-llm
 ```
 
 Chaque chiffre de ce document sort de [`results/logs/run_cgmacros_complet.log`](../results/logs/run_cgmacros_complet.log),

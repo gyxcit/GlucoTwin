@@ -1,0 +1,78 @@
+# Run de reference — couche 4 avec AGENT et OUTILS
+# commande : python scripts/run_reco.py --simuler-llm
+# commit : e54c6c1  date : 2026-08-14T15:25:25Z
+# NOTE : le LLM est SCRIPTE (aucun appel reseau) — api.mistral.ai est
+#        injoignable depuis ce conteneur (HTTP 000). Le but de ce log est
+#        de montrer la trace d appels d outils et le fait que la sortie
+#        passe par le meme validateur. Pour un vrai appel :
+#        python scripts/run_reco.py --llm --agent  (terminal avec reseau)
+# ================================================================
+
+LLM SCRIPTE (aucun appel reseau) — sert a montrer la trace.
+
+Jumeau de demonstration : patient median CGMacros (theta reduit, results/reparametrisation.json)
+  journee simulee : pic 180 mg/dL, moyenne 142 mg/dL
+
+Effet mesure sur ce jumeau contre effet de population (outil simuler_intervention) :
+  intervention            pic mesure   moyenne  population    ecart
+  REDUIRE_GLUCIDES             -16.5      -4.1       -44.7    +28.2
+  INDEX_GLYCEMIQUE_BAS         -11.6      -0.3       -26.3    +14.7
+  FIBRES                        -5.2      -0.3       -11.3     +6.1
+  MARCHE_POST_REPAS             -3.8      -0.7       -10.0     +6.2
+  VELO_MODERE                   +0.0      -0.7        +0.0     +0.0
+  AVANCER_DINER                 +0.0      +0.6        +0.0     +0.0
+  FRACTIONNER_REPAS            -11.8      -0.0       -29.8    +18.0
+  L'ecart est l'information que le LLM seul n'aurait pas eue : le
+  catalogue annonce une moyenne, le jumeau calibre repond pour ce patient.
+
+==========================================================================
+COUCHE 4 — recommandations a catalogue ferme  [agent + outils, LLM scripte]
+==========================================================================
+
+— apres un repas copieux
+  glycemie 205 mg/dL · tendance +0.80 · risque hypo 1 %
+  catalogue : 7 possibles, 0 ecartees
+     · etat_courant → ok
+     · simuler_intervention(REDUIRE_GLUCIDES) → mesuré -16.5 mg/dL (population -45)
+     · simuler_intervention(FRACTIONNER_REPAS) → mesuré -11.8 mg/dL (population -30)
+  >> [agent] REDUIRE_GLUCIDES · FRACTIONNER_REPAS
+     Sur votre jumeau, alleger le prochain repas d'un tiers abaisse le pic de 17 mg/dL et le fractionner de 12 — nettement moins que les 45 et 30 annonces en moyenne.
+
+— plateau de milieu d'apres-midi
+  glycemie 148 mg/dL · tendance -0.10 · risque hypo 3 %
+  catalogue : 7 possibles, 0 ecartees
+  >> [agent] REDUIRE_GLUCIDES · FRACTIONNER_REPAS
+     Sur votre jumeau, alleger le prochain repas d'un tiers abaisse le pic de 17 mg/dL et le fractionner de 12 — nettement moins que les 45 et 30 annonces en moyenne.
+
+— glycemie limite, pas de danger immediat
+  glycemie 98 mg/dL · tendance +0.00 · risque hypo 8 %
+  catalogue : 3 possibles, 4 ecartees
+  >> [repli] INDEX_GLYCEMIQUE_BAS · FIBRES · AVANCER_DINER
+     D'après la simulation du jumeau, par effet décroissant : privilégier des aliments à index glycémique bas (effet simulé -26 mg/dL sur le pic) ; ajouter des fibres au repas (effet simulé -11 mg/dL sur le pic) ; avancer le 
+     (sortie du LLM rejetee : contre-indiquee (REDUIRE_GLUCIDES) : glycemie 98 < 100 mg/dL · contre-indiquee (FRACTIONNER_REPAS) : glycemie 98 < 100 mg/dL · aucune intervention valide ne subsiste)
+
+— PENDANT LE SOMMEIL
+  glycemie 155 mg/dL · tendance -0.05 · risque hypo 4 %  · endormi
+  catalogue : 5 possibles, 2 ecartees
+  >> [agent] REDUIRE_GLUCIDES · FRACTIONNER_REPAS
+     Sur votre jumeau, alleger le prochain repas d'un tiers abaisse le pic de 17 mg/dL et le fractionner de 12 — nettement moins que les 45 et 30 annonces en moyenne.
+
+— GLYCEMIE BASSE — le systeme doit refuser
+  glycemie 76 mg/dL · tendance -0.20 · risque hypo 12 %
+  catalogue : 0 possibles, 7 ecartees
+  >> REFUS — La glycémie est basse ou en baisse rapide. Ce prototype ne formule aucune recommandation dans cette situation.
+
+— CHUTE RAPIDE — le systeme doit refuser
+  glycemie 145 mg/dL · tendance -1.10 · risque hypo 18 %
+  catalogue : 1 possibles, 6 ecartees
+  >> REFUS — La glycémie est basse ou en baisse rapide. Ce prototype ne formule aucune recommandation dans cette situation.
+
+— RISQUE D'HYPO ANNONCE — le systeme doit refuser
+  glycemie 135 mg/dL · tendance -0.20 · risque hypo 42 %
+  catalogue : 0 possibles, 7 ecartees
+  >> REFUS — La glycémie est basse ou en baisse rapide. Ce prototype ne formule aucune recommandation dans cette situation.
+
+==========================================================================
+3 scenarios sur 7 ont declenche un refus.
+Le refus n'est pas un echec : c'est la reponse correcte quand l'etat
+interdit de conseiller. Aucune sortie de modele ne peut le contourner.

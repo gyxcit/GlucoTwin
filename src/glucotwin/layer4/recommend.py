@@ -34,6 +34,8 @@ class Recommandation:
     source: str = "repli"
     validation: ValidationResult | None = None
     refusees: list[tuple[str, str]] = field(default_factory=list)
+    #: trace des appels d'outils quand la recommandation vient de l'agent
+    trace: list = field(default_factory=list)
 
     @property
     def ids(self) -> list[str]:
@@ -50,7 +52,10 @@ def texte_deterministe(interventions: list[Intervention]) -> str:
     """La formulation de repli : plate, exacte, sans modèle de langage."""
     if not interventions:
         return "Aucune suggestion applicable dans l'état actuel."
-    bouts = [f"{i.titre.lower()} (effet simulé {i.effet_pic:+.0f} mg/dL sur le pic)"
+    bouts = [f"{i.titre.lower()} (" + (
+                 "effet non restitué par le modèle réduit"
+                 if abs(i.effet_pic) < 0.5
+                 else f"effet simulé {i.effet_pic:+.0f} mg/dL sur le pic") + ")"
              for i in interventions]
     return ("D'après la simulation du jumeau, par effet décroissant : "
             + " ; ".join(bouts) + ".")

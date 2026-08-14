@@ -1,0 +1,142 @@
+{
+ "REDUIRE_GLUCIDES": {
+  "population": {
+   "id": "REDUIRE_GLUCIDES",
+   "pic_avant": 242.7,
+   "pic_apres": 198.0,
+   "effet_pic": -44.7,
+   "effet_moyenne": -12.6,
+   "gain_temps_dans_cible_pts": 18.7
+  },
+  "personnel": {
+   "id": "REDUIRE_GLUCIDES",
+   "pic_avant": 179.9,
+   "pic_apres": 163.4,
+   "effet_pic": -16.5,
+   "effet_moyenne": -4.1,
+   "gain_temps_dans_cible_pts": 0.0
+  },
+  "ecart_pic_mg_dl": 28.2,
+  "catalogue_effet_pic": -44.7
+ },
+ "INDEX_GLYCEMIQUE_BAS": {
+  "population": {
+   "id": "INDEX_GLYCEMIQUE_BAS",
+   "pic_avant": 242.7,
+   "pic_apres": 216.4,
+   "effet_pic": -26.3,
+   "effet_moyenne": -0.9,
+   "gain_temps_dans_cible_pts": 5.2
+  },
+  "personnel": {
+   "id": "INDEX_GLYCEMIQUE_BAS",
+   "pic_avant": 179.9,
+   "pic_apres": 168.3,
+   "effet_pic": -11.6,
+   "effet_moyenne": -0.3,
+   "gain_temps_dans_cible_pts": 0.0
+  },
+  "ecart_pic_mg_dl": 14.7,
+  "catalogue_effet_pic": -26.3
+ },
+ "FIBRES": {
+  "population": {
+   "id": "FIBRES",
+   "pic_avant": 242.7,
+   "pic_apres": 231.4,
+   "effet_pic": -11.3,
+   "effet_moyenne": -1.0,
+   "gain_temps_dans_cible_pts": 2.1
+  },
+  "personnel": {
+   "id": "FIBRES",
+   "pic_avant": 179.9,
+   "pic_apres": 174.7,
+   "effet_pic": -5.2,
+   "effet_moyenne": -0.3,
+   "gain_temps_dans_cible_pts": 0.0
+  },
+  "ecart_pic_mg_dl": 6.1,
+  "catalogue_effet_pic": -11.3
+ },
+ "MARCHE_POST_REPAS": {
+  "population": {
+   "id": "MARCHE_POST_REPAS",
+   "pic_avant": 242.7,
+   "pic_apres": 232.7,
+   "effet_pic": -10.0,
+   "effet_moyenne": -2.4,
+   "gain_temps_dans_cible_pts": 3.1
+  },
+  "personnel": {
+   "id": "MARCHE_POST_REPAS",
+   "pic_avant": 179.9,
+   "pic_apres": 176.0,
+   "effet_pic": -3.8,
+   "effet_moyenne": -0.7,
+   "gain_temps_dans_cible_pts": 0.0
+  },
+  "ecart_pic_mg_dl": 6.2,
+  "catalogue_effet_pic": -10.0
+ },
+ "VELO_MODERE": {
+  "population": {
+   "id": "VELO_MODERE",
+   "pic_avant": 242.7,
+   "pic_apres": 242.7,
+   "effet_pic": 0.0,
+   "effet_moyenne": -2.5,
+   "gain_temps_dans_cible_pts": 0.0
+  },
+  "personnel": {
+   "id": "VELO_MODERE",
+   "pic_avant": 179.9,
+   "pic_apres": 179.9,
+   "effet_pic": 0.0,
+   "effet_moyenne": -0.7,
+   "gain_temps_dans_cible_pts": 0.0
+  },
+  "ecart_pic_mg_dl": 0.0,
+  "catalogue_effet_pic": 0.0
+ },
+ "AVANCER_DINER": {
+  "population": {
+   "id": "AVANCER_DINER",
+   "pic_avant": 242.7,
+   "pic_apres": 242.7,
+   "effet_pic": 0.0,
+   "effet_moyenne": 2.8,
+   "gain_temps_dans_cible_pts": 0.0
+  },
+  "personnel": {
+   "id": "AVANCER_DINER",
+   "pic_avant": 179.9,
+   "pic_apres": 179.9,
+   "effet_pic": 0.0,
+   "effet_moyenne": 0.6,
+   "gain_temps_dans_cible_pts": 0.0
+  },
+  "ecart_pic_mg_dl": 0.0,
+  "catalogue_effet_pic": 0.0
+ },
+ "FRACTIONNER_REPAS": {
+  "population": {
+   "id": "FRACTIONNER_REPAS",
+   "pic_avant": 242.7,
+   "pic_apres": 212.8,
+   "effet_pic": -29.8,
+   "effet_moyenne": -0.0,
+   "gain_temps_dans_cible_pts": 1.4
+  },
+  "personnel": {
+   "id": "FRACTIONNER_REPAS",
+   "pic_avant": 179.9,
+   "pic_apres": 168.1,
+   "effet_pic": -11.8,
+   "effet_moyenne": -0.0,
+   "gain_temps_dans_cible_pts": 0.0
+  },
+  "ecart_pic_mg_dl": 18.0,
+  "catalogue_effet_pic": -29.8
+ }
+}

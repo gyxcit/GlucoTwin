@@ -17,6 +17,12 @@ n'a été recopié à la main.
 | `logs/run_calibration_reel.log` | sa sortie intégrale |
 | `calibration_vs_prevision.json` | `scripts/run_calibrated_forecast.py` — la calibration aide-t-elle la prévision ? |
 | `logs/run_calibration_prevision.log` | sa sortie intégrale |
+| `reparametrisation.json` | `scripts/run_reparam.py` — modèle complet contre modèle réduit, saturation, validation externe de `g_base` |
+| `logs/run_reparam_reel.log` | sa sortie intégrale |
+| `catalogue_effets.json` | `scripts/etalonner_catalogue.py` — d'où viennent les mg/dL du catalogue de la couche 4 |
+| `logs/etalonnage_catalogue.log` | sa sortie intégrale, colonnes population et patient médian |
+| `logs/run_reco_deterministe.log` | `scripts/run_reco.py` — couche 4 sans aucun modèle de langage |
+| `logs/run_reco_agent.log` | `scripts/run_reco.py --simuler-llm` — la trace d'appels d'outils de l'agent |
 
 Chaque journal commence par la commande exacte, le commit, la date et les
 versions de Python, NumPy et scikit-learn.
@@ -35,7 +41,17 @@ python scripts/run_calibration.py --cgmacros data/CGMacros --days-fit 3 \
     --out results/calibration_reelle.json
 python scripts/run_calibrated_forecast.py --cgmacros data/CGMacros \
     --days-fit 3 --out results/calibration_vs_prevision.json
+python scripts/run_reparam.py --cgmacros data/CGMacros \
+    --out results/reparametrisation.json
+python scripts/etalonner_catalogue.py                       # couche 4 : les mg/dL
+python scripts/run_reco.py                                  # couche 4 : deterministe
+python scripts/run_reco.py --simuler-llm                    # couche 4 : trace de l agent
+python scripts/run_reco.py --llm --agent                    # couche 4 : agent + Mistral
 ```
+
+Les deux derniers ne dépendent pas de CGMacros : la couche 4 tourne sur la
+journée de référence. Seul `--llm` demande un réseau et une `MISTRAL_API_KEY` —
+et c'est volontaire que tout le reste marche sans.
 
 **Aucune donnée patient ici** — uniquement des agrégats. CGMacros est en
 CC BY-NC-SA 4.0 et se télécharge séparément (voir `NOTICE.md`).

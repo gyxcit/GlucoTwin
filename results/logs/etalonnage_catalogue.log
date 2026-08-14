@@ -1,0 +1,39 @@
+# GlucoTwin — etalonnage du catalogue de la couche 4
+# commande : python scripts/etalonner_catalogue.py
+# date     : 2026-08-14T15:23:02+00:00
+# commit   : e54c6c1
+# python   : 3.11.15 · numpy 2.4.4
+
+Journee de reference (volontairement sedentaire) :
+  repas  7.75 h ·  55.0 g de glucides · IG 1.00 · fibres 6 g
+  repas 12.75 h ·  75.0 g de glucides · IG 1.10 · fibres 8 g
+  repas 20.50 h ·  65.0 g de glucides · IG 0.90 · fibres 5 g
+  activite MAR04 a  8.50 h · 25 min
+  activite SED03 a  9.50 h · 180 min
+  activite SED03 a 14.00 h · 180 min
+
+theta population : 1, 1, 0.02, 110
+theta median CGMacros (44 patients, modele reduit) : 0.5618, 0.4997, 0.03544, 130.5
+
+intervention            population  personnel   ecart  moyenne  TIR pts
+-----------------------------------------------------------------------
+REDUIRE_GLUCIDES             -44.7      -16.5   +28.2    -12.6    +18.7
+INDEX_GLYCEMIQUE_BAS         -26.3      -11.6   +14.7     -0.9     +5.2
+FIBRES                       -11.3       -5.2    +6.1     -1.0     +2.1
+MARCHE_POST_REPAS            -10.0       -3.8    +6.2     -2.4     +3.1
+VELO_MODERE                   +0.0       +0.0    +0.0     -2.5     +0.0
+AVANCER_DINER                 +0.0       +0.0    +0.0     +2.8     +0.0
+FRACTIONNER_REPAS            -29.8      -11.8   +18.0     -0.0     +1.4
+
+Ecart maximal entre catalogue.py et le recalcul : 0.00 mg/dL
+(un test de la suite echoue si cet ecart depasse 0,1 mg/dL)
+
+Effet nul sur le pic, et on l'assume : VELO_MODERE, AVANCER_DINER
+  Le modele reduit n'a ni sensibilite prolongee apres l'effort, ni
+  penalite circadienne du soir. Ces interventions n'y changent donc
+  pas le pic. C'est une limite du modele, pas un resultat clinique.
+
+Effet moyen sur le pic : population -17.4 mg/dL, patient median CGMacros -7.0 mg/dL (40 % de l'effet de population)
+Autrement dit, annoncer l'effet de population a ce patient-la le
+surestimerait d'un facteur 2.5. C'est ce que l'agent corrige,
+et c'est la seule raison de lui donner des outils plutot qu'un resume.

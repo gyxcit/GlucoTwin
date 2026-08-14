@@ -8,12 +8,25 @@ Trois règles ont présidé à son contenu :
 2. **Chaque entrée porte ses contre-indications**, exprimées comme des
    conditions sur l'état métabolique — pas comme des consignes en langage
    naturel qu'un modèle pourrait réinterpréter.
-3. **L'effet annoncé vient du jumeau, pas de la littérature clinique.** Il donne
-   un ordre de grandeur et rien de plus ; c'est écrit dans chaque entrée.
+3. **L'effet annoncé est calculé, pas posé.** Chaque `effet_pic` est produit par
+   `scripts/etalonner_catalogue.py`, qui traduit l'intervention en modification
+   de l'emploi du temps, la fait passer par la couche 1 puis par le modèle
+   réduit avec θ de population, et lit l'écart de pic. Les valeurs sont
+   archivées dans `results/catalogue_effets.json`, et un test compare le
+   catalogue au recalcul : si le modèle bouge et que le catalogue ne suit pas,
+   la suite de tests casse.
 
-L'ablation sur données réelles conforte l'ordre du catalogue : la branche
-alimentaire porte 91 à 99 % du pouvoir explicatif, l'activité beaucoup moins.
-Les interventions alimentaires sont donc en tête, et c'est mesuré.
+L'ablation sur données réelles conforte l'ordre obtenu : la branche alimentaire
+porte 91 à 99 % du pouvoir explicatif, l'activité beaucoup moins. Les
+interventions alimentaires sortent en tête — et c'est mesuré, pas décidé.
+
+**Deux entrées ressortent à effet nul, et on les garde ainsi.** Le modèle réduit
+n'a aucun mécanisme de sensibilité à l'insuline prolongée après l'effort, ni de
+dégradation de la tolérance au glucose en soirée : le vélo de fin de journée et
+l'avancement du dîner n'y changent donc pas le pic. C'est une limite du modèle,
+pas une preuve que ces interventions sont inutiles — la littérature dit le
+contraire. Les afficher à 0,0 est la lecture honnête : le jumeau ne sait pas
+encore le voir.
 """
 
 from __future__ import annotations
@@ -28,7 +41,9 @@ class Intervention:
     id: str
     titre: str
     detail: str
-    #: effet indicatif sur le pic glycémique, en mg/dL (négatif = abaisse)
+    #: effet sur le pic glycémique, en mg/dL (négatif = abaisse). **Calculé**
+    #: par `scripts/etalonner_catalogue.py` sur la journée de référence avec le
+    #: θ de population — jamais saisi à la main.
     effet_pic: float
     categorie: str
     #: glycémie en dessous de laquelle l'intervention est interdite
@@ -65,7 +80,7 @@ CATALOGUE: list[Intervention] = [
         titre="Réduire la charge glucidique du prochain repas",
         detail="Diminuer d'environ un tiers la portion de féculents ou de sucres "
                "rapides, à composition égale par ailleurs.",
-        effet_pic=-46.0, categorie="alimentation",
+        effet_pic=-44.7, categorie="alimentation",
         glycemie_min=100.0, pente_min=-0.5, risque_hypo_max=0.10,
     ),
     Intervention(
@@ -73,7 +88,7 @@ CATALOGUE: list[Intervention] = [
         titre="Privilégier des aliments à index glycémique bas",
         detail="Remplacer les sucres rapides par des équivalents plus lents : "
                "légumineuses, céréales complètes.",
-        effet_pic=-43.0, categorie="alimentation",
+        effet_pic=-26.3, categorie="alimentation",
         glycemie_min=90.0, risque_hypo_max=0.15,
     ),
     Intervention(
@@ -81,14 +96,14 @@ CATALOGUE: list[Intervention] = [
         titre="Ajouter des fibres au repas",
         detail="Une portion de légumes ou de légumineuses ralentit l'absorption "
                "des glucides du même repas.",
-        effet_pic=-18.0, categorie="alimentation",
+        effet_pic=-11.3, categorie="alimentation",
         glycemie_min=90.0, risque_hypo_max=0.15,
     ),
     Intervention(
         id="MARCHE_POST_REPAS",
         titre="Marcher 30 minutes après le repas",
         detail="Une marche d'intensité modérée dans l'heure qui suit le repas.",
-        effet_pic=-16.0, categorie="activite",
+        effet_pic=-10.0, categorie="activite",
         glycemie_min=100.0, pente_min=-0.4,
         interdite_si_endormi=True, risque_hypo_max=0.08,
     ),
@@ -97,7 +112,7 @@ CATALOGUE: list[Intervention] = [
         titre="45 minutes de vélo en fin de journée",
         detail="Effort modéré et continu, en dehors des trois heures précédant "
                "le coucher.",
-        effet_pic=-14.0, categorie="activite",
+        effet_pic=0.0, categorie="activite",
         glycemie_min=110.0, pente_min=-0.3,
         interdite_si_endormi=True, risque_hypo_max=0.05,
     ),
@@ -106,7 +121,7 @@ CATALOGUE: list[Intervention] = [
         titre="Avancer le dîner",
         detail="Décaler le dernier repas de deux à trois heures plus tôt, la "
                "tolérance au glucose se dégradant en soirée.",
-        effet_pic=-4.0, categorie="rythme",
+        effet_pic=0.0, categorie="rythme",
         glycemie_min=90.0, risque_hypo_max=0.20,
     ),
     Intervention(
@@ -114,7 +129,7 @@ CATALOGUE: list[Intervention] = [
         titre="Fractionner le repas en deux prises",
         detail="Répartir la même quantité en deux prises espacées d'environ "
                "deux heures.",
-        effet_pic=-12.0, categorie="rythme",
+        effet_pic=-29.8, categorie="rythme",
         glycemie_min=100.0, risque_hypo_max=0.10,
     ),
 ]
