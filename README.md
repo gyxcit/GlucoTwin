@@ -41,8 +41,8 @@ Concrètement, le système ne dit pas « la variable 7 pesait 0,3 » mais **« v
 | **0** — Emploi du temps | Repas, activités, sommeil, contexte | non | ✅ validé |
 | **1** — Concepts métaboliques | Physiologie : METs, Frayn, absorption, circadien, phénomène de l'aube | **non** — équations | ✅ validé |
 | **2** — Prévision glycémique | Concepts + historique → glycémie à H minutes | **oui** | ✅ logiciel validé · ⏳ données réelles |
-| **3** — États et risques | Chiffres → probabilités calibrées | calibration | ⏳ à faire |
-| **4** — Recommandations | LLM conditionné, catalogue fermé + validateur | non | ⏳ à faire |
+| **3** — États et risques | Chiffres → probabilités calibrées | calibration | ✅ validé sur données réelles |
+| **4** — Recommandations | LLM conditionné, catalogue fermé + validateur | non | ✅ validé (34 tests adverses) |
 
 La couche 1 n'apprend rien : c'est de la physiologie publiée. C'est ce qui la rend **vérifiable sans données**.
 
@@ -145,6 +145,30 @@ visés, sur données réelles et sur les quatre horizons.
 > **Sorties brutes des runs :** [`results/`](results/) — chaque chiffre cité est
 > régénérable par un script du dépôt, avec commande, commit et versions de
 > bibliothèques en en-tête de journal.
+
+### Recommandations : le LLM est enfermé, pas encadré
+
+La couche 4 ne demande pas à un modèle de langage d'être prudent — elle lui
+retire les moyens de ne pas l'être. Il ne choisit que dans un **catalogue fermé**
+de sept interventions non médicamenteuses, et tout ce qu'il produit passe par un
+**validateur déterministe** qui peut le rejeter en bloc : identifiant inventé,
+intervention contre-indiquée dans l'état courant, vocabulaire médical, forme
+invalide. En cas d'échec, sa sortie n'est pas corrigée, elle est **jetée** — on
+retombe sur le classement déterministe du catalogue.
+
+Trois états déclenchent un **refus pur**, quelle que soit la qualité de la
+sortie : glycémie basse, chute rapide, ou risque d'hypoglycémie annoncé. Le
+système répond alors qu'il ne conseille pas.
+
+La propriété est testée, pas espérée : **pour tout état, l'ensemble des
+interventions affichables est le même avec ou sans LLM**. Le modèle réordonne et
+rédige ; il ne peut jamais élargir. Trente-quatre tests l'attaquent — identifiants
+inventés, exercice conseillé à un patient qui descend, « ajustez votre insuline »
+glissé dans une phrase anodine, JSON malformé, API en panne.
+
+L'appel réel se fait avec `python scripts/run_reco.py --llm`, qui lit
+`MISTRAL_API_KEY` dans l'environnement. Sans clé, la couche fonctionne
+entièrement — c'est même son mode de référence.
 
 ### Personnalisation : le problème inverse
 
@@ -269,7 +293,7 @@ results/     sorties brutes des runs de référence
 notebooks/   entraînement (Kaggle)
 demo/        applications web autonomes — atelier.html = la démo
 docs/        revue de littérature, état de l'art, architecture, plans
-tests/       85 tests
+tests/       124 tests
 ```
 
 ---
@@ -299,7 +323,7 @@ Trois pièges rencontrés dans CGMacros, tous silencieux et tous traités dans l
 - [x] **Calibration de la couche 1 par patient** (problème inverse) — +12,64 mg/dL sur le modèle direct, sans effet sur la prévision
 - [x] **Ablation sur données réelles** — les repas portent 91 à 99 % du gain
 - [x] **Reparamétrisation des branches basales** — saturation 11 % → 57 %, et la glycémie d'équilibre corrèle à r = 0,82 avec le laboratoire
-- [ ] Couche 4 : recommandations avec catalogue fermé et validateur
+- [x] **Couche 4** : catalogue fermé + validateur déterministe — le LLM ne peut jamais élargir l'ensemble permis
 - [ ] Validation externe sur un second jeu de données
 
 ---

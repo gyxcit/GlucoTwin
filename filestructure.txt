@@ -30178,6 +30178,7 @@
     |-- run_calibration.py
     |-- run_cgmacros.py
     |-- run_layer2.py
+    |-- run_reco.py
     |-- run_reparam.py
     |-- run_risk.py
     |-- sensitivity.py
@@ -30196,6 +30197,12 @@
             |-- models.py
             |-- risk.py
             |-- __init__.py
+        |-- layer4
+            |-- catalogue.py
+            |-- llm.py
+            |-- recommend.py
+            |-- validator.py
+            |-- __init__.py
         |-- metabolic_engine.py
         |-- met_activities.csv
         |-- __init__.py
@@ -30211,5 +30218,6 @@
     |-- test_day_concepts.py
     |-- test_fairness.py
     |-- test_layer2.py
+    |-- test_layer4.py
     |-- test_metabolic.py
     |-- test_risk.py

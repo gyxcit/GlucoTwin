@@ -1,0 +1,57 @@
+# Run de reference — couche 4, recommandations a catalogue ferme
+# commande : python scripts/run_reco.py     (mode deterministe, sans LLM)
+# commit : d754945  date : 2026-08-14T14:58:17Z
+# NOTE : l appel LLM ne peut pas tourner ici — api.mistral.ai est
+#        injoignable depuis ce conteneur (HTTP 000). Relancer avec
+#        --llm depuis un terminal ayant reseau et MISTRAL_API_KEY.
+# ================================================================
+
+==========================================================================
+COUCHE 4 — recommandations a catalogue ferme  [deterministe]
+==========================================================================
+
+— apres un repas copieux
+  glycemie 205 mg/dL · tendance +0.80 · risque hypo 1 %
+  catalogue : 7 possibles, 0 ecartees
+  >> [repli] REDUIRE_GLUCIDES · INDEX_GLYCEMIQUE_BAS · FIBRES
+     D'après la simulation du jumeau, par effet décroissant : réduire la charge glucidique du prochain repas (effet simulé -46 mg/dL sur le pic) ; privilégier des aliments à index glycémique bas (effet simulé -43 mg/dL sur le
+
+— plateau de milieu d'apres-midi
+  glycemie 148 mg/dL · tendance -0.10 · risque hypo 3 %
+  catalogue : 7 possibles, 0 ecartees
+  >> [repli] REDUIRE_GLUCIDES · INDEX_GLYCEMIQUE_BAS · FIBRES
+     D'après la simulation du jumeau, par effet décroissant : réduire la charge glucidique du prochain repas (effet simulé -46 mg/dL sur le pic) ; privilégier des aliments à index glycémique bas (effet simulé -43 mg/dL sur le
+
+— glycemie limite, pas de danger immediat
+  glycemie 98 mg/dL · tendance +0.00 · risque hypo 8 %
+  catalogue : 3 possibles, 4 ecartees
+  >> [repli] INDEX_GLYCEMIQUE_BAS · FIBRES · AVANCER_DINER
+     D'après la simulation du jumeau, par effet décroissant : privilégier des aliments à index glycémique bas (effet simulé -43 mg/dL sur le pic) ; ajouter des fibres au repas (effet simulé -18 mg/dL sur le pic) ; avancer le 
+
+— PENDANT LE SOMMEIL
+  glycemie 155 mg/dL · tendance -0.05 · risque hypo 4 %  · endormi
+  catalogue : 5 possibles, 2 ecartees
+  >> [repli] REDUIRE_GLUCIDES · INDEX_GLYCEMIQUE_BAS · FIBRES
+     D'après la simulation du jumeau, par effet décroissant : réduire la charge glucidique du prochain repas (effet simulé -46 mg/dL sur le pic) ; privilégier des aliments à index glycémique bas (effet simulé -43 mg/dL sur le
+
+— GLYCEMIE BASSE — le systeme doit refuser
+  glycemie 76 mg/dL · tendance -0.20 · risque hypo 12 %
+  catalogue : 0 possibles, 7 ecartees
+  >> REFUS — La glycémie est basse ou en baisse rapide. Ce prototype ne formule aucune recommandation dans cette situation.
+
+— CHUTE RAPIDE — le systeme doit refuser
+  glycemie 145 mg/dL · tendance -1.10 · risque hypo 18 %
+  catalogue : 1 possibles, 6 ecartees
+  >> REFUS — La glycémie est basse ou en baisse rapide. Ce prototype ne formule aucune recommandation dans cette situation.
+
+— RISQUE D'HYPO ANNONCE — le systeme doit refuser
+  glycemie 135 mg/dL · tendance -0.20 · risque hypo 42 %
+  catalogue : 0 possibles, 7 ecartees
+  >> REFUS — La glycémie est basse ou en baisse rapide. Ce prototype ne formule aucune recommandation dans cette situation.
+
+==========================================================================
+3 scenarios sur 7 ont declenche un refus.
+Le refus n'est pas un echec : c'est la reponse correcte quand l'etat
+interdit de conseiller. Aucune sortie de modele ne peut le contourner.
+
+# code retour : 0
