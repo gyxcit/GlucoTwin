@@ -1,0 +1,74 @@
+{
+  "30": {
+    "event": "hypoglycemie",
+    "seuil": 70.0,
+    "n_events": 223,
+    "taux_de_base": 0.00208323602223364,
+    "brier": 0.0020595006374216278,
+    "brier_skill": 0.009329716873315741,
+    "ece": 0.0006751936817513489,
+    "auroc_par_patient": 0.7516700366106527,
+    "auroc_ic95": [
+      0.6230141048497042,
+      0.8803259683716012
+    ],
+    "auroc_poolee": 0.8422534641887393,
+    "average_precision": 0.04205964456740269,
+    "n_patients_evalues": 18,
+    "sensibilite_seuil": 0.0
+  },
+  "60": {
+    "event": "hypoglycemie",
+    "seuil": 70.0,
+    "n_events": 223,
+    "taux_de_base": 0.002130403630284213,
+    "brier": 0.0021452103195380426,
+    "brier_skill": -0.009099970498966714,
+    "ece": 0.0013039446866826543,
+    "auroc_par_patient": 0.6090722363622821,
+    "auroc_ic95": [
+      0.4814455770587124,
+      0.7366988956658519
+    ],
+    "auroc_poolee": 0.6848245697940256,
+    "average_precision": 0.006859373929931755,
+    "n_patients_evalues": 18,
+    "sensibilite_seuil": 0.0
+  },
+  "90": {
+    "event": "hypoglycemie",
+    "seuil": 70.0,
+    "n_events": 221,
+    "taux_de_base": 0.0021602072234983625,
+    "brier": 0.0021718797682619257,
+    "brier_skill": -0.007580019156160134,
+    "ece": 0.001566494065333083,
+    "auroc_par_patient": 0.5321809492303584,
+    "auroc_ic95": [
+      0.43305153960446435,
+      0.6313103588562524
+    ],
+    "auroc_poolee": 0.615647840186974,
+    "average_precision": 0.003181738833847741,
+    "n_patients_evalues": 17,
+    "sensibilite_seuil": 0.01809954751131222
+  },
+  "120": {
+    "event": "hypoglycemie",
+    "seuil": 70.0,
+    "n_events": 221,
+    "taux_de_base": 0.002211437434332316,
+    "brier": 0.002225490720039265,
+    "brier_skill": -0.008585242650561042,
+    "ece": 0.0017687876001298355,
+    "auroc_par_patient": 0.5287924547375438,
+    "auroc_ic95": [
+      0.44682625422120864,
+      0.6107586552538788
+    ],
+    "auroc_poolee": 0.5898011525632993,
+    "average_precision": 0.0032452498983406887,
+    "n_patients_evalues": 17,
+    "sensibilite_seuil": 0.0
+  }
+}

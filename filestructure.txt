@@ -30138,6 +30138,7 @@
     |-- 04_plan_projet.md
     |-- 05_feuille_de_route_publication.md
     |-- 06_moteur_metabolique.md
+    |-- 07_resultats_reels.md
     |-- figures
         |-- 00_cohorte.png
         |-- 01_journee.png
@@ -30157,18 +30158,30 @@
 |-- pyproject.toml
 |-- README.md
 |-- requirements.txt
+|-- results
+    |-- cgmacros_reel.json
+    |-- couche3_synthetique.json
+    |-- README.md
 |-- scripts
     |-- build_deck.js
+    |-- inspect_cgmacros.py
+    |-- run_cgmacros.py
     |-- run_layer2.py
+    |-- run_risk.py
     |-- sensitivity.py
 |-- src
     |-- glucotwin
+        |-- data
+            |-- cgmacros.py
+            |-- __init__.py
         |-- day_concepts.py
         |-- layer2
             |-- cohort.py
             |-- evaluation.py
+            |-- fairness.py
             |-- features.py
             |-- models.py
+            |-- risk.py
             |-- __init__.py
         |-- metabolic_engine.py
         |-- met_activities.csv
@@ -30180,8 +30193,11 @@
         |-- SOURCES.txt
         |-- top_level.txt
 |-- tests
+    |-- test_cgmacros.py
     |-- test_day_concepts.py
+    |-- test_fairness.py
     |-- test_layer2.py
     |-- test_metabolic.py
+    |-- test_risk.py
 |-- _to_delete
     |-- index.lock.stale

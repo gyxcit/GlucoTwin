@@ -1,0 +1,74 @@
+{
+  "30": {
+    "event": "hyperglycemie",
+    "seuil": 180.0,
+    "n_events": 1212,
+    "taux_de_base": 0.024846248462484625,
+    "brier": 0.017623628917900473,
+    "brier_skill": 0.2726198920085374,
+    "ece": 0.0014397434867586842,
+    "auroc_par_patient": 0.9205000267259628,
+    "auroc_ic95": [
+      0.9019539659658116,
+      0.939046087486114
+    ],
+    "auroc_poolee": 0.9377022638565572,
+    "average_precision": 0.45902346766506846,
+    "n_patients_evalues": 25,
+    "sensibilite_seuil": 0.26485148514851486
+  },
+  "60": {
+    "event": "hyperglycemie",
+    "seuil": 180.0,
+    "n_events": 1212,
+    "taux_de_base": 0.02540880503144654,
+    "brier": 0.025462012001312803,
+    "brier_skill": -0.02821987501915091,
+    "ece": 0.00970065807454333,
+    "auroc_par_patient": 0.6487797823194813,
+    "auroc_ic95": [
+      0.5896444059032887,
+      0.7079151587356739
+    ],
+    "auroc_poolee": 0.7764287036279777,
+    "average_precision": 0.09072448865807531,
+    "n_patients_evalues": 25,
+    "sensibilite_seuil": 0.009075907590759076
+  },
+  "90": {
+    "event": "hyperglycemie",
+    "seuil": 180.0,
+    "n_events": 1212,
+    "taux_de_base": 0.025997425997425997,
+    "brier": 0.02667753627055337,
+    "brier_skill": -0.05355027258368428,
+    "ece": 0.011749945528817442,
+    "auroc_par_patient": 0.6277546545594324,
+    "auroc_ic95": [
+      0.5753976936178558,
+      0.680111615501009
+    ],
+    "auroc_poolee": 0.7064071323556774,
+    "average_precision": 0.054433301558023124,
+    "n_patients_evalues": 25,
+    "sensibilite_seuil": 0.0
+  },
+  "120": {
+    "event": "hyperglycemie",
+    "seuil": 180.0,
+    "n_events": 1212,
+    "taux_de_base": 0.026613965744400527,
+    "brier": 0.027439125727060393,
+    "brier_skill": -0.05919412989559447,
+    "ece": 0.02167207403163567,
+    "auroc_par_patient": 0.5965820928400846,
+    "auroc_ic95": [
+      0.5371715372682752,
+      0.655992648411894
+    ],
+    "auroc_poolee": 0.6512209110393985,
+    "average_precision": 0.041657815135973164,
+    "n_patients_evalues": 25,
+    "sensibilite_seuil": 0.0
+  }
+}

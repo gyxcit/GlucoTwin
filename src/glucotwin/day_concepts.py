@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import csv
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 
@@ -242,24 +243,23 @@ def insulin_sensitivity(
 # --- Le pipeline ------------------------------------------------------------
 
 
-def compute_day_concepts(
+def met_series_from_schedule(
     schedule: DaySchedule,
     catalogue: dict[str, Activity],
-    *,
-    step_min: int = 5,
-) -> list[ConceptFrame]:
-    """Produit le flux de concepts sur 24 h, pas de `step_min` minutes."""
-    frames: list[ConceptFrame] = []
-    glycogen_deficit = 0.0
-    steps = int(24 * 60 / step_min) + 1
+    steps: int,
+    step_min: int,
+) -> tuple[list[float], list[float]]:
+    """Déplie l'emploi du temps en série de METs, un point par pas.
 
+    Renvoie ``(met, elapsed)`` : l'intensité courante et le temps écoulé depuis
+    le début de l'activité en cours — les deux seules choses dont la
+    physiologie a besoin. Hors activité, c'est le métabolisme de repos : le
+    corps ne s'arrête jamais.
+    """
+    met_series, elapsed_series = [], []
     for i in range(steps):
         minute = i * step_min
         hour = minute / 60.0
-
-        # --- branche activité ---
-        # L'intensité courante est celle de l'activité en cours ; en dehors,
-        # c'est le métabolisme de repos (le corps ne s'arrête jamais).
         met_now = 0.0
         elapsed_in_activity = 0.0
 
@@ -274,6 +274,80 @@ def compute_day_concepts(
 
         if met_now == 0.0:
             met_now = 0.95 if schedule.is_asleep(hour) else 1.3
+        met_series.append(met_now)
+        elapsed_series.append(elapsed_in_activity)
+    return met_series, elapsed_series
+
+
+def elapsed_from_met_series(
+    met_series: Sequence[float], step_min: int, rest_met: float = 1.6
+) -> list[float]:
+    """Temps écoulé depuis le début de l'effort en cours, déduit d'une série mesurée.
+
+    Un capteur ne dit pas « l'activité a commencé à 8h30 » : il donne une
+    intensité minute par minute. On reconstruit donc la durée d'effort en
+    comptant depuis le dernier passage au-dessus du seuil de repos — c'est
+    cette durée qui pilote la bascule glycogène → glucose sanguin.
+    """
+    elapsed, run = [], 0.0
+    for met in met_series:
+        if met >= rest_met:
+            elapsed.append(run)
+            run += step_min
+        else:
+            run = 0.0
+            elapsed.append(0.0)
+    return elapsed
+
+
+def compute_day_concepts(
+    schedule: DaySchedule,
+    catalogue: dict[str, Activity],
+    *,
+    step_min: int = 5,
+) -> list[ConceptFrame]:
+    """Produit le flux de concepts sur 24 h, pas de `step_min` minutes."""
+    steps = int(24 * 60 / step_min) + 1
+    met_series, elapsed_series = met_series_from_schedule(
+        schedule, catalogue, steps, step_min
+    )
+    return concepts_from_met_series(
+        schedule, met_series, elapsed_series, step_min=step_min
+    )
+
+
+def concepts_from_met_series(
+    schedule: DaySchedule,
+    met_series: Sequence[float],
+    elapsed_series: Sequence[float] | None = None,
+    *,
+    step_min: int = 5,
+) -> list[ConceptFrame]:
+    """**Le cœur de la couche 1** : METs mesurés ou simulés → 14 concepts.
+
+    C'est le point d'entrée unique de la physiologie. ``compute_day_concepts``
+    l'appelle après avoir déplié un emploi du temps ; l'adaptateur CGMacros
+    l'appelle avec les METs **mesurés** par le bracelet. Aucune équation n'est
+    dupliquée entre les deux chemins — ce qui est validé sur l'un l'est sur
+    l'autre.
+    """
+    if elapsed_series is None:
+        elapsed_series = elapsed_from_met_series(met_series, step_min)
+    if len(elapsed_series) != len(met_series):
+        raise ValueError(
+            f"series de longueurs differentes : {len(met_series)} METs "
+            f"contre {len(elapsed_series)} durees"
+        )
+
+    frames: list[ConceptFrame] = []
+    glycogen_deficit = 0.0
+
+    for i, (met_now, elapsed_in_activity) in enumerate(
+        zip(met_series, elapsed_series)
+    ):
+        minute = i * step_min
+        hour = minute / 60.0
+        met_now = max(0.9, float(met_now))
 
         # Oxydation calculée à TOUT instant, repos compris.
         vo2 = vo2_from_met(met_now, schedule.weight_kg)

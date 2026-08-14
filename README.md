@@ -8,9 +8,15 @@
 
 ## La thèse
 
-> À 30 minutes, la prévision glycémique est un problème **saturé** : sur données réelles, la persistance — « la glycémie ne bougera pas » — est quasi imbattable (13,39 mg/dL contre 13,11 pour un modèle entraîné, benchmark CGMacros). La question utile n'est donc pas *« quel modèle a la plus petite erreur »*, mais **où** la prévision a une valeur clinique réelle, et **sait-on quand elle est fiable ?**
+> À 30 minutes, la prévision glycémique est un problème **saturé** : sur les 45
+> participants réels de CGMacros, la persistance — « la glycémie ne bougera pas »
+> — atteint 13,41 mg/dL, et un modèle entraîné 12,33. La question utile n'est
+> donc pas *« quel modèle a la plus petite erreur »*, mais **où** la prévision a
+> une valeur clinique réelle, **pour qui**, et **sait-on quand elle est fiable ?**
 
-Ce dépôt répond en mesurant trois choses que la MAE seule ne montre pas : l'effet de l'**horizon**, la capacité à **détecter les événements**, et la **fiabilité annoncée** des prédictions.
+Ce dépôt répond en mesurant quatre choses que la MAE seule ne montre pas :
+l'effet de l'**horizon**, la capacité à **détecter les événements**, la
+**fiabilité annoncée** des prédictions, et l'**équité** entre sous-groupes.
 
 ---
 
@@ -60,7 +66,11 @@ python -c "from glucotwin.day_concepts import *; import glucotwin.day_concepts a
 # L'incertitude sur la partition glucides/lipides (le VCO₂ n'est jamais mesuré)
 python scripts/sensitivity.py
 
-# Une expérience de prévision, évaluée honnêtement
+# Une expérience sur données réelles (après téléchargement de CGMacros)
+python scripts/inspect_cgmacros.py data/CGMacros          # 7 contrôles de recevabilité
+python scripts/run_cgmacros.py data/CGMacros --horizons 30 60 90 120
+
+# La même chose sur cohorte synthétique, sans aucune donnée à télécharger
 python scripts/run_layer2.py --patients 30 --days 6 --horizons 30 60 90 120 --models hgb
 
 # Les tests
@@ -71,26 +81,64 @@ pytest -q
 
 ## Résultats
 
-Sur cohorte **synthétique** (45 patients virtuels), horizon variable, modèle *HistGradientBoosting*, évaluation *leave-one-patient-out* :
+Sur les **45 participants réels** de CGMacros (Dexcom G6 Pro, 395 journées,
+114 155 pas de 5 min), évaluation *leave-one-patient-out*, modèle
+*HistGradientBoosting* :
 
-| Horizon | MAE modèle | MAE persistance | Gain | p | Patients gagnés |
-|---:|---:|---:|---:|---:|---:|
-| 30 min | 6,25 | 8,30 | **+2,06** | 8,0e-09 | 40/45 |
-| 60 min | 10,13 | 12,96 | **+2,83** | 7,3e-08 | 39/45 |
-| 90 min | 11,85 | 16,04 | **+4,19** | 9,0e-09 | 39/45 |
-| 120 min | 12,51 | 18,23 | **+5,72** | 1,7e-11 | 42/45 |
+| Horizon | MAE modèle | MAE persistance | Gain | p | Patients gagnés | Couverture |
+|---:|---:|---:|---:|---:|---:|---:|
+| 30 min | **12,33** | 13,41 | **+1,08** | 1,3e-04 | 34/45 | 89,8 % |
+| 60 min | 20,66 | 19,97 | −0,69 | 0,55 | 25/45 | 89,4 % |
+| 90 min | 25,32 | 24,51 | −0,81 | 0,37 | 25/45 | 88,9 % |
+| 120 min | 28,73 | 28,01 | −0,72 | 0,15 | 28/45 | 88,5 % |
 
-L'avantage **triple** entre 30 et 120 minutes, et l'ablation des concepts est monotone :
-19,00 mg/dL avec l'historique glycémique seul → 13,81 en ajoutant les repas → 12,84 avec
-l'activité → **12,51** avec les modulateurs, soit **−34 %**.
+**Le pipeline est validé contre une référence externe.** La persistance ne
+dépend d'aucun modèle : c'est une propriété des données seules. Nos 13,41 mg/dL
+tombent à **0,02 mg/dL** du repère publié sur CGMacros (13,39). Le modèle de
+référence publié fait 13,11 ; le nôtre 12,33.
 
-**Le résultat le plus intéressant est une contradiction.** Pendant que le gain en MAE *triple* avec l'horizon, la **sensibilité de détection des hyperglycémies s'effondre** : 44,6 % → 11,4 % → 3,8 % → **1,7 %**. La cause est mesurée : l'écart-type des prédictions tombe de 0,87 à 0,69 fois celui des vraies valeurs — c'est de la **régression vers la moyenne**. Le modèle devient meilleur « en moyenne » et quasiment aveugle « quand ça compte ».
+### Trois résultats qui contredisent l'intuition
 
-À 120 minutes, il gagne 5,72 mg/dL sur la persistance **et ne détecte plus que 1,7 % des hyperglycémies**. Optimiser la MAE ne rend pas un jumeau cliniquement utile.
+**1. Le gain disparaît au-delà de 30 minutes.** Sur cohorte synthétique il
+*triplait* avec l'horizon (+2,06 → +5,72 mg/dL). Sur données réelles il devient
+négatif et non significatif dès 60 min. Une version antérieure de ce README
+annonçait que « la pente se transférera » — **elle s'inverse**. La cohorte
+simulée engendrait la glycémie à partir des concepts fournis au modèle, ce qui
+rendait la tâche d'autant plus facile que l'horizon s'allongeait.
 
-> ⚠️ **Ces chiffres valident le logiciel, pas la science.** La cohorte est **entièrement simulée** : aucun patient réel n'a été utilisé.
->
-> En particulier, la glycémie synthétique est engendrée à partir des concepts que le modèle reçoit : la tâche est **plus facile qu'en réalité**, surtout à court horizon. Sur les vraies données de CGMacros, un modèle comparable obtient 13,11 mg/dL contre 13,39 pour la persistance à 30 min — quasiment ex æquo. **Ce qui se transférera aux données réelles, c'est la pente, pas les valeurs.**
+**2. L'hypoglycémie n'est jamais détectée.** 223 événements réels, sensibilité
+**0 %** à tous les horizons. L'erreur par zone dit la même chose : 9,85 mg/dL en
+zone normale contre 37,8 en hypoglycémie et jusqu'à 108 en zone très élevée à
+120 min. Une MAE globale de 12,33 masque entièrement cette structure.
+
+**3. La performance n'est pas la même pour tous.** À 60 min, l'écart entre
+groupes atteint 7,42 mg/dL (**p = 0,019**, test de permutation) — et le signe du
+gain s'inverse : le modèle aide les diabétiques (+0,06) et **dégrade** les sujets
+sains (−2,89). Chez un sujet sain la glycémie bouge peu, donc la persistance est
+quasi parfaite et tout modèle ajoute du bruit.
+
+**4. Mais reformuler en probabilité récupère une partie de ce que le seuillage
+détruit.** À 30 min, la prévision ponctuelle ne franchit *jamais* le seuil de
+70 mg/dL — sensibilité nulle — alors que la probabilité issue du **même modèle**
+classe les hypoglycémies avec une AUROC de 0,752 et une précision moyenne
+**20 fois supérieure au hasard**. Pour l'hyperglycémie, la probabilité bat la
+climatologie à *tous* les horizons, jusqu'à deux heures. La limite est nette :
+au-delà de 30 min, l'hypoglycémie redevient impossible à classer (AUROC 0,53).
+
+**La prédiction conforme, elle, tient** : couverture de 88,5 à 89,8 % pour 90 %
+visés, sur données réelles et sur les quatre horizons.
+
+> **Analyse complète :** [`docs/07_resultats_reels.md`](docs/07_resultats_reels.md).
+> **Sorties brutes des runs :** [`results/`](results/) — chaque chiffre cité est
+> régénérable par un script du dépôt, avec commande, commit et versions de
+> bibliothèques en en-tête de journal.
+
+### Sur cohorte synthétique
+
+Les chiffres synthétiques restent produits par `scripts/run_layer2.py`. Ils
+valident le **logiciel** — l'absence de fuite, la mécanique d'évaluation, la
+chaîne concepts → features → modèle. Ils ne valident **pas** la physiologie, et
+le point 1 ci-dessus montre précisément où ils induisent en erreur.
 
 ### Démonstration
 
@@ -139,7 +187,7 @@ Trois règles, tenues par construction dans `glucotwin/layer2/evaluation.py` :
 
 S'y ajoutent des métriques **cliniques** : erreur par zone glycémique et sensibilité de détection des événements — parce qu'une MAE excellente peut coexister avec une incapacité totale à annoncer une hypoglycémie.
 
-**Sur la couverture conforme :** avec 45 patients, la couverture observée est de **89,2 à 89,8 % pour 90 % visés** — la garantie tient. Elle se dégradait à 84–88 % sur de petits échantillons (une dizaine de patients), la calibration inter-patients n'étant alors pas assez fournie. À surveiller sur données réelles, où le décalage entre patients est plus marqué ; piste en réserve : *Mondrian conformal* ou calibration sur les premiers jours du patient lui-même.
+**Sur la couverture conforme :** elle tient sur **données réelles** — 88,5 à 89,8 % pour 90 % visés, sur les quatre horizons. C'était le pari le plus risqué : la garantie conforme suppose l'échangeabilité, que rien ne garantit entre patients réels. Le prix est la largeur, qui passe de 57,7 mg/dL à 30 min à 121,2 mg/dL à 120 min — un intervalle honnête à deux heures est un intervalle inutilisable, ce qui est en soi une information. Piste en réserve : *Mondrian conformal*, ou calibration sur les premiers jours du patient lui-même.
 
 ---
 
@@ -170,10 +218,11 @@ src/glucotwin/
     └── evaluation.py       LOPO · persistance · conforme · métriques cliniques
 
 scripts/     expériences en ligne de commande
+results/     sorties brutes des runs de référence
 notebooks/   entraînement (Kaggle)
 demo/        applications web autonomes — atelier.html = la démo
 docs/        revue de littérature, état de l'art, architecture, plans
-tests/       25 tests
+tests/       73 tests
 ```
 
 ---
@@ -182,8 +231,10 @@ tests/       25 tests
 
 Ce dépôt **ne redistribue aucune donnée patient**.
 
-- **Cohorte synthétique** — générée par `glucotwin.layer2.cohort`, pour valider le logiciel.
-- **CGMacros v1.0.0** (PhysioNet, `10.13026/3z8q-x658`) — 45 participants réels. Licence **CC BY-NC-SA 4.0**, à télécharger séparément. Voir [`NOTICE.md`](NOTICE.md).
+- **CGMacros v1.0.0** (PhysioNet, `10.13026/3z8q-x658`) — 45 participants réels, **la référence du projet**. Licence **CC BY-NC-SA 4.0**, à télécharger séparément. Voir [`NOTICE.md`](NOTICE.md).
+- **Cohorte synthétique** — générée par `glucotwin.layer2.cohort`, pour valider le logiciel sans données.
+
+Trois pièges rencontrés dans CGMacros, tous silencieux et tous traités dans l'adaptateur : `bio.csv` est en **livres et en pouces** ; **11 participants sur 45** n'ont pas la colonne `METs` (reconstruite depuis les calories Fitbit, erreur absolue moyenne 0,000 MET) ; et le **Dexcom et le Libre divergent de 30 mg/dL** de biais, ce qui déplace la MAE plus que n'importe quel modèle. Détails dans [`docs/07_resultats_reels.md`](docs/07_resultats_reels.md).
 
 ---
 
@@ -195,11 +246,11 @@ Ce dépôt **ne redistribue aucune donnée patient**.
 - [x] Harnais d'évaluation LOPO + persistance + conforme
 - [x] Métriques cliniques par zone et détection d'événements
 - [x] Application web de démonstration
-- [ ] **Adaptateur CGMacros** — prochain jalon
+- [x] **Adaptateur CGMacros** — 45 patients réels, pipeline validé contre le repère publié
+- [x] Analyse d'équité par sous-groupes, avec test de permutation
+- [x] Couche 3 : probabilités calibrées de risque
 - [ ] Calibration de la couche 1 par patient (problème inverse)
-- [ ] Couche 3 : probabilités calibrées de risque
 - [ ] Couche 4 : recommandations avec catalogue fermé et validateur
-- [ ] Analyse d'équité par sous-groupes
 - [ ] Validation externe sur un second jeu de données
 
 ---

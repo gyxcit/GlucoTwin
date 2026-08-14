@@ -1,0 +1,215 @@
+# Run de reference — GlucoTwin sur CGMacros v1.0.0
+# commande : python scripts/run_cgmacros.py data/CGMacros --horizons 30 60 90 120 --out results/cgmacros_reel.json
+# commit   : d378b9a
+# date     : 2026-08-14T08:35:04Z
+# python   : Python 3.11.15
+# sklearn  : 1.8.0
+# numpy    : 2.4.4
+# ================================================================
+
+======================================================================
+CHARGEMENT — CGMacros
+======================================================================
+  P001: 9 journees | poids 61 kg | groupe sain | METs METs
+  P002: 9 journees | poids 77 kg | groupe sain | METs METs
+  P003: 9 journees | poids 71 kg | groupe diabete | METs METs
+  P004: 9 journees | poids 119 kg | groupe sain | METs METs
+  P005: 9 journees | poids 78 kg | groupe diabete | METs METs
+  P006: 9 journees | poids 89 kg | groupe sain | METs METs
+  P007: 1 journees | poids 91 kg | groupe prediabete | METs METs
+  P008: 9 journees | poids 99 kg | groupe prediabete | METs METs
+  P009: 9 journees | poids 83 kg | groupe prediabete | METs METs
+  P010: 9 journees | poids 89 kg | groupe prediabete | METs METs
+  P011: 9 journees | poids 84 kg | groupe prediabete | METs calories
+  P012: 9 journees | poids 93 kg | groupe diabete | METs METs
+  P013: 9 journees | poids 81 kg | groupe prediabete | METs METs
+  P014: 9 journees | poids 82 kg | groupe diabete | METs METs
+  P015: 9 journees | poids 58 kg | groupe sain | METs METs
+  P016: 9 journees | poids 129 kg | groupe prediabete | METs METs
+  P017: 9 journees | poids 64 kg | groupe sain | METs METs
+  P018: 8 journees | poids 110 kg | groupe sain | METs METs
+  P019: 9 journees | poids 92 kg | groupe sain | METs METs
+  P020: 9 journees | poids 94 kg | groupe prediabete | METs METs
+  P021: 9 journees | poids 65 kg | groupe sain | METs METs
+  P022: 9 journees | poids 53 kg | groupe prediabete | METs METs
+  P023: 9 journees | poids 70 kg | groupe prediabete | METs METs
+  P026: 8 journees | poids 90 kg | groupe prediabete | METs calories
+  P027: 9 journees | poids 79 kg | groupe sain | METs calories
+  P028: 9 journees | poids 93 kg | groupe diabete | METs METs
+  P029: 9 journees | poids 74 kg | groupe prediabete | METs METs
+  P030: 9 journees | poids 82 kg | groupe diabete | METs METs
+  P031: 9 journees | poids 69 kg | groupe sain | METs calories
+  P032: 9 journees | poids 77 kg | groupe sain | METs calories
+  P033: 9 journees | poids 79 kg | groupe sain | METs calories
+  P034: 9 journees | poids 84 kg | groupe sain | METs calories
+  P035: 9 journees | poids 76 kg | groupe diabete | METs calories
+  P036: 9 journees | poids 70 kg | groupe diabete | METs METs
+  P038: 9 journees | poids 92 kg | groupe diabete | METs calories
+  P039: 9 journees | poids 67 kg | groupe diabete | METs METs
+  P041: 9 journees | poids 67 kg | groupe prediabete | METs METs
+  P042: 9 journees | poids 104 kg | groupe diabete | METs calories
+  P043: 9 journees | poids 118 kg | groupe prediabete | METs METs
+  P044: 9 journees | poids 93 kg | groupe prediabete | METs METs
+  P045: 9 journees | poids 74 kg | groupe prediabete | METs METs
+  P046: 9 journees | poids 82 kg | groupe diabete | METs calories
+  P047: 9 journees | poids 83 kg | groupe diabete | METs METs
+  P048: 9 journees | poids 58 kg | groupe sain | METs METs
+  P049: 9 journees | poids 84 kg | groupe diabete | METs METs
+
+114,155 pas de 5 min | 45 patients | 395 journees (mediane 9/patient)
+glycemie moyenne 142 mg/dL | TIR 85 % | hypo 0.2 % | hyper 14.7 %
+groupes : diabete 14 · prediabete 16 · sain 15
+
+=== Horizon 30 min === 107,045 exemples, 24 features
+
+[hgb] horizon 30 min — DONNEES REELLES
+------------------------------------------------------------------
+  Patients (leave-one-out)      45
+  MAE modele                    12.33 mg/dL
+  MAE persistance               13.41 mg/dL
+  Gain                          +1.08 mg/dL  [IC95 +0.55, +1.61]
+  p (Wilcoxon apparie)          1.32e-04
+  Patients ou le modele gagne   34/45
+  Couverture des intervalles    89.8 %  (largeur moyenne 57.7 mg/dL)
+
+  Erreur par zone glycemique
+    hypoglycemie   n=    223   MAE 37.77 mg/dL
+    bas-normal     n=   9473   MAE 14.12 mg/dL
+    normal         n=  81518   MAE 9.85 mg/dL
+    eleve          n=  12862   MAE 21.60 mg/dL
+    tres eleve     n=   2969   MAE 37.36 mg/dL
+
+  Detection hypoglycemie (<70)  223 evenements reels | sensibilite 0 % | precision 0 %
+  Detection hyperglycemie (>180) 15727 evenements | sensibilite 70 % | precision 85 %
+
+  Equite — [hgb] horizon 30 min
+------------------------------------------------------------------------------
+groupe           n  MAE mod.  MAE pers.     gain  gagnes  sens. hyper
+diabete         14     14.49      15.80    +1.31  12/14        74.1 %
+prediabete      16     11.61      12.99    +1.38  13/16        63.2 %
+sain            15     11.09      11.63    +0.54   9/15        52.1 %
+------------------------------------------------------------------------------
+  Ecart max entre groupes       3.40 mg/dL
+  p (permutation des groupes)   0.007
+  -> ecart superieur a ce que le hasard produit
+
+=== Horizon 60 min === 104,675 exemples, 24 features
+
+[hgb] horizon 60 min — DONNEES REELLES
+------------------------------------------------------------------
+  Patients (leave-one-out)      45
+  MAE modele                    20.66 mg/dL
+  MAE persistance               19.97 mg/dL
+  Gain                          -0.69 mg/dL  [IC95 -2.44, +1.07]
+  p (Wilcoxon apparie)          5.46e-01
+  Patients ou le modele gagne   25/45
+  Couverture des intervalles    89.4 %  (largeur moyenne 91.1 mg/dL)
+
+  Erreur par zone glycemique
+    hypoglycemie   n=    223   MAE 51.60 mg/dL
+    bas-normal     n=   9377   MAE 25.87 mg/dL
+    normal         n=  79490   MAE 15.45 mg/dL
+    eleve          n=  12650   MAE 37.42 mg/dL
+    tres eleve     n=   2935   MAE 76.90 mg/dL
+
+  Detection hypoglycemie (<70)  223 evenements reels | sensibilite 0 % | precision 0 %
+  Detection hyperglycemie (>180) 15482 evenements | sensibilite 43 % | precision 68 %
+
+  Equite — [hgb] horizon 60 min
+------------------------------------------------------------------------------
+groupe           n  MAE mod.  MAE pers.     gain  gagnes  sens. hyper
+diabete         14     25.71      25.77    +0.06  10/14        46.8 %
+prediabete      16     18.46      19.18    +0.73   9/16        37.9 %
+sain            15     18.29      15.40    -2.89   6/15        29.1 %
+------------------------------------------------------------------------------
+  Ecart max entre groupes       7.42 mg/dL
+  p (permutation des groupes)   0.019
+  -> ecart superieur a ce que le hasard produit
+
+=== Horizon 90 min === 102,305 exemples, 24 features
+
+[hgb] horizon 90 min — DONNEES REELLES
+------------------------------------------------------------------
+  Patients (leave-one-out)      45
+  MAE modele                    25.32 mg/dL
+  MAE persistance               24.51 mg/dL
+  Gain                          -0.81 mg/dL  [IC95 -3.57, +1.95]
+  p (Wilcoxon apparie)          3.70e-01
+  Patients ou le modele gagne   25/45
+  Couverture des intervalles    88.9 %  (largeur moyenne 109.4 mg/dL)
+
+  Erreur par zone glycemique
+    hypoglycemie   n=    221   MAE 58.55 mg/dL
+    bas-normal     n=   9273   MAE 31.99 mg/dL
+    normal         n=  77471   MAE 18.77 mg/dL
+    eleve          n=  12425   MAE 45.50 mg/dL
+    tres eleve     n=   2915   MAE 96.84 mg/dL
+
+  Detection hypoglycemie (<70)  221 evenements reels | sensibilite 2 % | precision 36 %
+  Detection hyperglycemie (>180) 15238 evenements | sensibilite 30 % | precision 49 %
+
+  Equite — [hgb] horizon 90 min
+------------------------------------------------------------------------------
+groupe           n  MAE mod.  MAE pers.     gain  gagnes  sens. hyper
+diabete         14     32.01      32.97    +0.95  10/14        31.7 %
+prediabete      16     22.25      23.37    +1.12   8/16        30.1 %
+sain            15     22.34      17.84    -4.51   7/15        15.2 %
+------------------------------------------------------------------------------
+  Ecart max entre groupes       9.76 mg/dL
+  p (permutation des groupes)   0.040
+  -> ecart superieur a ce que le hasard produit
+
+=== Horizon 120 min === 99,935 exemples, 24 features
+
+[hgb] horizon 120 min — DONNEES REELLES
+------------------------------------------------------------------
+  Patients (leave-one-out)      45
+  MAE modele                    28.73 mg/dL
+  MAE persistance               28.01 mg/dL
+  Gain                          -0.72 mg/dL  [IC95 -4.81, +3.37]
+  p (Wilcoxon apparie)          1.53e-01
+  Patients ou le modele gagne   28/45
+  Couverture des intervalles    88.5 %  (largeur moyenne 121.2 mg/dL)
+
+  Erreur par zone glycemique
+    hypoglycemie   n=    221   MAE 58.24 mg/dL
+    bas-normal     n=   9179   MAE 36.67 mg/dL
+    normal         n=  75418   MAE 21.54 mg/dL
+    eleve          n=  12209   MAE 50.04 mg/dL
+    tres eleve     n=   2908   MAE 108.07 mg/dL
+
+  Detection hypoglycemie (<70)  221 evenements reels | sensibilite 0 % | precision 0 %
+  Detection hyperglycemie (>180) 15020 evenements | sensibilite 24 % | precision 37 %
+
+  Equite — [hgb] horizon 120 min
+------------------------------------------------------------------------------
+groupe           n  MAE mod.  MAE pers.     gain  gagnes  sens. hyper
+diabete         14     35.80      38.52    +2.72  10/14        25.0 %
+prediabete      16     24.14      26.56    +2.42  11/16        26.1 %
+sain            15     27.02      19.76    -7.26   7/15        12.0 %
+------------------------------------------------------------------------------
+  Ecart max entre groupes       11.66 mg/dL
+  p (permutation des groupes)   0.074
+  -> avec ce nombre de patients, l'ecart ne se distingue pas du bruit
+
+======================================================================
+SYNTHESE — donnees reelles
+======================================================================
+modele@horizon      MAE mod.  MAE pers.     gain          p   gagnes
+hgb@30                 12.33      13.41    +1.08    1.3e-04   34/45
+hgb@60                 20.66      19.97    -0.69    5.5e-01   25/45
+hgb@90                 25.32      24.51    -0.81    3.7e-01   25/45
+hgb@120                28.73      28.01    -0.72    1.5e-01   28/45
+
+Repere publie sur CGMacros a 30 min : modele 13.11 / persistance 13.39 mg/dL
+Nous                                : modele 12.33 / persistance 13.41 mg/dL
+  -> la persistance retombe sur le repere : pipeline coherent.
+
+Rappel de lecture : la persistance est redoutable a 30 min. Un gain
+faible a court horizon n'est pas un echec, c'est le resultat attendu —
+ce qui compte est la pente avec l'horizon et la detection des evenements.
+
+Resultats ecrits dans results/cgmacros_reel.json
+
+# ================================================================
+# code retour : 0

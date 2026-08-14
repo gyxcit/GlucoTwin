@@ -1,0 +1,125 @@
+# Run de reference — couche 3, probabilites de risque
+# commande : python scripts/run_risk.py --patients 30 --days 6 --horizons 30 60 90 120 --reliability
+# commit   : d378b9a
+# date     : 2026-08-14T08:42:30Z
+# NOTE     : cohorte SYNTHETIQUE — la couche 3 na pas encore tourne sur CGMacros
+# ================================================================
+
+======================================================================
+COUCHE 3 — hyperglycemie | cohorte synthetique (30 patients x 6 jours)
+52,020 pas | 30 patients | taux de base 2.3 %
+======================================================================
+
+[hgb] horizon 30 min
+----------------------------------------------------------------------
+  Evenement                     hyperglycemie (seuil 180 mg/dL)
+  Taux de base                  2.5 % (1212 sur 48780)
+  Brier                         0.0176
+  Gain sur la climatologie      +0.273   
+  Erreur de calibration         0.001
+  AUROC par patient             0.921  [IC95 0.902, 0.939]  sur 25 patients
+  AUROC poolee                  0.938  (+0.017 vs par patient — melange les patients)
+  Average precision             0.459  (hasard = 0.025)
+  --- la question du module ---
+  Detection par seuil           26.5 % de sensibilite
+  Probabilite calibree          AUROC 0.921 -> le classement reste informatif
+
+  Fiabilite — hyperglycemie
+      annonce   observe         n
+         0.0%      0.1%    17,893
+         0.1%      0.3%     5,388
+         0.3%      0.3%     6,676
+         0.6%      0.4%     6,138
+         1.8%      2.0%     6,586
+        17.1%     16.6%     6,099
+
+[hgb] horizon 60 min
+----------------------------------------------------------------------
+  Evenement                     hyperglycemie (seuil 180 mg/dL)
+  Taux de base                  2.5 % (1212 sur 47700)
+  Brier                         0.0255
+  Gain sur la climatologie      -0.028   (pire que rien)
+  Erreur de calibration         0.010
+  AUROC par patient             0.649  [IC95 0.590, 0.708]  sur 25 patients
+  AUROC poolee                  0.776  (+0.128 vs par patient — melange les patients)
+  Average precision             0.091  (hasard = 0.025)
+  --- la question du module ---
+  Detection par seuil           0.9 % de sensibilite
+  Probabilite calibree          AUROC 0.649 -> le classement s'affaiblit aussi
+
+  Fiabilite — hyperglycemie
+      annonce   observe         n
+         0.0%      0.3%    11,809
+         0.6%      1.6%     5,258
+         0.9%      1.0%     6,310
+         1.4%      1.1%     5,396
+         2.1%      2.9%     6,735
+         4.0%      3.4%     6,218
+        14.2%      9.6%     5,974
+
+[hgb] horizon 90 min
+----------------------------------------------------------------------
+  Evenement                     hyperglycemie (seuil 180 mg/dL)
+  Taux de base                  2.6 % (1212 sur 46620)
+  Brier                         0.0267
+  Gain sur la climatologie      -0.054   (pire que rien)
+  Erreur de calibration         0.012
+  AUROC par patient             0.628  [IC95 0.575, 0.680]  sur 25 patients
+  AUROC poolee                  0.706  (+0.079 vs par patient — melange les patients)
+  Average precision             0.054  (hasard = 0.026)
+  --- la question du module ---
+  Detection par seuil           0.0 % de sensibilite
+  Probabilite calibree          AUROC 0.628 -> le classement s'affaiblit aussi
+
+  Fiabilite — hyperglycemie
+      annonce   observe         n
+         0.1%      0.6%    11,530
+         0.8%      1.9%     5,822
+         1.4%      1.6%     5,945
+         2.1%      2.0%     5,734
+         3.1%      4.0%     5,668
+         4.3%      2.4%     5,248
+        11.0%      7.1%     6,673
+
+[hgb] horizon 120 min
+----------------------------------------------------------------------
+  Evenement                     hyperglycemie (seuil 180 mg/dL)
+  Taux de base                  2.7 % (1212 sur 45540)
+  Brier                         0.0274
+  Gain sur la climatologie      -0.059   (pire que rien)
+  Erreur de calibration         0.022
+  AUROC par patient             0.597  [IC95 0.537, 0.656]  sur 25 patients
+  AUROC poolee                  0.651  (+0.055 vs par patient — melange les patients)
+  Average precision             0.042  (hasard = 0.027)
+  --- la question du module ---
+  Detection par seuil           0.0 % de sensibilite
+  Probabilite calibree          AUROC 0.597 -> plus d'information exploitable
+
+  Fiabilite — hyperglycemie
+      annonce   observe         n
+         0.1%      0.5%    11,373
+         0.9%      2.3%     5,673
+         1.7%      2.6%     5,253
+         2.3%      2.4%     6,072
+         3.0%      6.3%     5,721
+         4.2%      2.3%     5,331
+        11.5%      4.1%     6,117
+
+======================================================================
+SYNTHESE — le seuil s'effondre, et le classement ?
+======================================================================
+ horizon  sens. seuil  AUROC/pat              IC95      AP    base  gain clim.    ECE
+    30 min        26.5%      0.921  [0.902, 0.939]   0.459   0.025      +0.273  0.001
+    60 min         0.9%      0.649  [0.590, 0.708]   0.091   0.025      -0.028  0.010
+    90 min         0.0%      0.628  [0.575, 0.680]   0.054   0.026      -0.054  0.012
+   120 min         0.0%      0.597  [0.537, 0.656]   0.042   0.027      -0.059  0.022
+
+Lecture :
+  Recuperation PARTIELLE. Le classement du risque survit a l'effondrement du
+  seuil (AUROC au-dessus du hasard partout), mais la quantification non :
+  le gain sur la climatologie devient negatif. A long horizon, le jumeau
+  peut ORDONNER le risque, plus le CHIFFRER.
+
+Resultats ecrits dans results/couche3_synthetique.json
+
+# code retour : 0

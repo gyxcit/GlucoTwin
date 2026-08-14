@@ -1,0 +1,22 @@
+h=30 : (107045, 24)
+
+[hgb] horizon 30 min — CGMacros REEL
+------------------------------------------------------------------
+  Patients (leave-one-out)      45
+  MAE modele                    12.33 mg/dL
+  MAE persistance               13.41 mg/dL
+  Gain                          +1.08 mg/dL  [IC95 +0.55, +1.61]
+  p (Wilcoxon apparie)          1.32e-04
+  Patients ou le modele gagne   34/45
+  Couverture des intervalles    89.8 %  (largeur moyenne 57.7 mg/dL)
+
+  Erreur par zone glycemique
+    hypoglycemie   n=    223   MAE 37.77 mg/dL
+    bas-normal     n=   9473   MAE 14.12 mg/dL
+    normal         n=  81518   MAE 9.85 mg/dL
+    eleve          n=  12862   MAE 21.60 mg/dL
+    tres eleve     n=   2969   MAE 37.36 mg/dL
+
+  Detection hypoglycemie (<70)  223 evenements reels | sensibilite 0 % | precision 0 %
+  Detection hyperglycemie (>180) 15727 evenements | sensibilite 70 % | precision 85 %
+FINI
