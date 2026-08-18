@@ -30164,6 +30164,7 @@
     |-- ablation_reelle.json
     |-- calibration_reelle.json
     |-- calibration_vs_prevision.json
+    |-- catalogue_effets.json
     |-- cgmacros_reel.json
     |-- couche3_reel_hyper.json
     |-- couche3_reel_hypo.json
@@ -30172,6 +30173,7 @@
     |-- reparametrisation.json
 |-- scripts
     |-- build_deck.js
+    |-- etalonner_catalogue.py
     |-- inspect_cgmacros.py
     |-- run_ablation.py
     |-- run_calibrated_forecast.py
@@ -30198,9 +30200,12 @@
             |-- risk.py
             |-- __init__.py
         |-- layer4
+            |-- agent.py
             |-- catalogue.py
+            |-- etalonnage.py
             |-- llm.py
             |-- recommend.py
+            |-- tools.py
             |-- validator.py
             |-- __init__.py
         |-- metabolic_engine.py
@@ -30219,5 +30224,7 @@
     |-- test_fairness.py
     |-- test_layer2.py
     |-- test_layer4.py
+    |-- test_layer4_agent.py
+    |-- test_layer4_etalonnage.py
     |-- test_metabolic.py
     |-- test_risk.py
